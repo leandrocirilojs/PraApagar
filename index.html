@@ -7,11 +7,11 @@
     <title>Document</title>
 </head>
 
-<body onload="toggleFullscreen()">
+<body onload="toggleFullscreen()" id="corpo">
 
     <script>
         function toggleFullscreen() {
-            let elem = document.getElementByTagName("body");
+            let elem = document.getElementById("corpo");
 
             if (!document.fullscreenElement) {
                 elem.requestFullscreen().catch(err => {

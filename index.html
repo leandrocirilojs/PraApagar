@@ -11,7 +11,7 @@
 
     <script>
         function toggleFullscreen() {
-            let elem = document.querySelector("body");
+            let elem = document.getElementByTagName("body");
 
             if (!document.fullscreenElement) {
                 elem.requestFullscreen().catch(err => {

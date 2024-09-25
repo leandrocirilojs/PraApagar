@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Imagens com DALL-E</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .image-container {
+            margin-top: 20px;
+        }
+        img {
+            max-width: 100%;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gerador de Imagens com DALL-E</h1>
+        <input type="text" id="description" placeholder="Digite a descrição da imagem">
+        <button onclick="generateImage()">Gerar Imagem</button>
+        <div class="image-container" id="imageContainer"></div>
+    </div>
+
+    <script>
+        async function generateImage() {
+            const description = document.getElementById('description').value;
+            const apiKey = 'SUA_CHAVE_API_AQUI'; // Substitua pela sua chave de API da OpenAI
+            const url = 'https://api.openai.com/v1/images/generations';
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    prompt: description,
+                    n: 1,
+                    size: '1024x1024'
+                })
+            });
+
+            const data = await response.json();
+            const imageUrl = data.data[0].url;
+            document.getElementById('imageContainer').innerHTML = `<img src="${imageUrl}" alt="Generated Image">`;
+        }
+    </script>
+</body>
+</html>

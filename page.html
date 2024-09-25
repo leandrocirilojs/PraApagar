@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Imagens com DALL-E</title>
+    <title>Consulta de CPF</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -41,46 +41,38 @@
         button:hover {
             background-color: #0056b3;
         }
-        .image-container {
+        .result {
             margin-top: 20px;
-        }
-        img {
-            max-width: 100%;
-            border-radius: 10px;
+            font-size: 18px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Gerador de Imagens com DALL-E</h1>
-        <input type="text" id="description" placeholder="Digite a descrição da imagem">
-        <button onclick="generateImage()">Gerar Imagem</button>
-        <div class="image-container" id="imageContainer"></div>
+        <h1>Consulta de CPF</h1>
+        <input type="text" id="cpf" placeholder="Digite o CPF">
+        <button onclick="consultarCPF()">Consultar</button>
+        <div class="result" id="result"></div>
     </div>
 
     <script>
-        async function generateImage() {
-            const description = document.getElementById('description').value;
-            const apiKey = 'SUA_CHAVE_API_AQUI'; // Substitua pela sua chave de API da OpenAI
-            const url = 'https://api.openai.com/v1/images/generations';
+        async function consultarCPF() {
+            const cpf = document.getElementById('cpf').value;
+            const apiKey = '3349c0ca-2652-4991-ac33-495043eb8938-e4fe0beb-dc84-445a-a5cc-80800c202fe9'; // Substitua pela sua chave de API
+            const url = `https://api.infosimples.com/api/v2/consultas/receita-federal-cpf?cpf=${cpf}`;
 
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`
-                },
-                body: JSON.stringify({
-                    prompt: description,
-                    n: 1,
-                    size: '1024x1024'
-                })
-            });
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
 
-            const data = await response.json();
-            const imageUrl = data.data[0].url;
-            document.getElementById('imageContainer').innerHTML = `<img src="${imageUrl}" alt="Generated Image">`;
-        }
-    </script>
-</body>
-</html>
+                const data = await response.json();
+                const resultElement = document.getElementById('result');
+                if (data.status === 'success') {
+                    resultElement.innerHTML = `
+                        <p>Nome: ${data.nome}</p>
+                        <p>Data de Nascimento: ${data.data

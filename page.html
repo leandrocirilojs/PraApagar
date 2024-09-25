@@ -75,4 +75,17 @@
                 if (data.status === 'success') {
                     resultElement.innerHTML = `
                         <p>Nome: ${data.nome}</p>
-                        <p>Data de Nascimento: ${data.data
+                        <p>Data de Nascimento: ${data.data_nascimento}</p>
+                        <p>Situação Cadastral: ${data.situacao_cadastral}</p>
+                    `;
+                } else {
+                    resultElement.textContent = 'Erro ao consultar CPF. Verifique os dados e tente novamente.';
+                }
+            } catch (error) {
+                console.error('Erro ao consultar CPF:', error);
+                document.getElementById('result').textContent = 'Erro ao consultar CPF. Tente novamente mais tarde.';
+            }
+        }
+    </script>
+</body>
+</html>

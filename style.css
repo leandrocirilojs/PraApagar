@@ -1,5 +1,5 @@
 :root {
-    --ifood-red: #891dd1;
+    --ifood-red: #EA1D2C;
     --ifood-dark-red: #D01A28;
     --ifood-gray: #F0F0F0;
     --ifood-dark-gray: #666;
@@ -415,3 +415,4 @@ body {
     justify-content: center;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
+

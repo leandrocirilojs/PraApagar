@@ -18,7 +18,7 @@ const menuItemsContainer = document.getElementById('menu-items');
             name: 'Marmita de Frango Grelhado',
             description: 'Frango grelhado, arroz integral, feijão e salada mista.',
             price: 25.00,
-            image: 'https://via.placeholder.com/150/FF5733/FFFFFF?text=Frango'
+            image: 'https://phygital-files.mercafacil.com/tartufo-bucket/uploads/produto/marmita_do_chef_estrogonofe_frango_400g_520c4b57-b1bd-45e8-9791-10da2169a31c.png'
         },
         {
             id: 2,
@@ -178,7 +178,7 @@ const menuItemsContainer = document.getElementById('menu-items');
         message += 'Por favor, confirme meu pedido e me informe sobre as opções de pagamento e entrega. Obrigado!';
 
         // Substitua '55DDNNNNNNNNN' pelo número de telefone do restaurante com código do país e DDD
-        const phoneNumber = '5511999999999'; // Exemplo: 55 (Brasil) 11 (DDD SP) 999999999 (Número)
+        const phoneNumber = '5511977930984'; // Exemplo: 55 (Brasil) 11 (DDD SP) 999999999 (Número)
         const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
     }

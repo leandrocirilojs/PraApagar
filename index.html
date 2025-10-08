@@ -1,67 +1,45 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
+   <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Piadas</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f0f0f0;
-            margin: 0;
-        }
-        .container {
-            text-align: center;
-            background: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        .joke {
-            margin-top: 20px;
-            font-size: 18px;
-        }
-    </style>
+    <title>Marmita & Cia</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Gerador de Piadas</h1>
-        <button onclick="fetchJoke()">Gerar Piada</button>
-        <p class="joke" id="joke"></p>
-    </div>
+    <header>
+        <h1>Marmita & Cia</h1>
+        <nav>
+            <button id="view-cart-btn">Ver Carrinho (<span id="cart-count">0</span>)</button>
+        </nav>
+    </header>
 
-    <script>
-        async function fetchJoke() {
-            try {
-                const response = await fetch('https://v2.jokeapi.dev/joke/Any');
-                const data = await response.json();
-                const jokeElement = document.getElementById('joke');
-                if (data.type === 'single') {
-                    jokeElement.textContent = data.joke;
-                } else {
-                    jokeElement.textContent = `${data.setup} - ${data.delivery}`;
-                }
-            } catch (error) {
-                console.error('Erro ao buscar piada:', error);
-            }
-        }
-    </script>
+    <main>
+        <section id="menu">
+            <h2>Nosso Cardápio</h2>
+            <div id="menu-items" class="grid-container">
+                <!-- Itens do cardápio serão carregados aqui pelo JavaScript -->
+            </div>
+        </section>
+
+        <section id="cart" class="hidden">
+            <h2>Seu Carrinho</h2>
+            <div id="cart-items">
+                <!-- Itens do carrinho serão carregados aqui pelo JavaScript -->
+            </div>
+            <div id="cart-summary">
+                <p>Total: R$ <span id="cart-total">0.00</span></p>
+                <button id="checkout-btn">Finalizar Pedido via WhatsApp</button>
+                <button id="continue-shopping-btn">Continuar Comprando</button>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 Marmita & Cia. Todos os direitos reservados.</p>
+    </footer>
+
+    <script src="script.js"></script>
 </body>
 </html>
+

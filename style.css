@@ -1,117 +1,161 @@
-
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f4f4;
-    color: #333;
+:root {
+    --ifood-red: #EA1D2C;
+    --ifood-dark-red: #D01A28;
+    --ifood-gray: #F0F0F0;
+    --ifood-dark-gray: #666;
+    --ifood-text-color: #333;
+    --ifood-white: #FFFFFF;
+    --ifood-green: #28a745; /* Para botões de sucesso/WhatsApp */
 }
 
-header {
-    background-color: #333;
-    color: #fff;
-    padding: 1em 0;
-    text-align: center;
+body {
+    font-family: 'Inter', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--ifood-gray);
+    color: var(--ifood-text-color);
+    line-height: 1.6;
+}
+
+.ifood-header {
+    background-color: var(--ifood-white);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    padding: 1em 2em;
+    display: flex;
+    justify-content: center; /* Centraliza o conteúdo do header */
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.header-content {
+    width: 100%;
+    max-width: 1200px; /* Limita a largura do conteúdo do header */
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1em 2em;
 }
 
-header h1 {
-    margin: 0;
+.ifood-logo {
+    height: 35px; /* Ajuste o tamanho do logo conforme necessário */
 }
 
-nav button {
-    background-color: #28a745;
-    color: white;
+.ifood-button {
     border: none;
-    padding: 0.8em 1.2em;
-    border-radius: 5px;
+    padding: 0.8em 1.5em;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 1em;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
 }
 
-nav button:hover {
-    background-color: #218838;
+.ifood-button.primary {
+    background-color: var(--ifood-red);
+    color: var(--ifood-white);
 }
 
-main {
+.ifood-button.primary:hover {
+    background-color: var(--ifood-dark-red);
+}
+
+.ifood-button.secondary {
+    background-color: var(--ifood-gray);
+    color: var(--ifood-text-color);
+    border: 1px solid #ccc;
+}
+
+.ifood-button.secondary:hover {
+    background-color: #e0e0e0;
+}
+
+.ifood-main {
     padding: 2em;
     max-width: 1200px;
     margin: auto;
 }
 
-section {
-    background-color: #fff;
+.ifood-section {
+    background-color: var(--ifood-white);
     padding: 2em;
     margin-bottom: 2em;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-h2 {
-    color: #333;
+.section-title {
+    color: var(--ifood-text-color);
     text-align: center;
     margin-bottom: 1.5em;
+    font-size: 2em;
+    font-weight: 700;
 }
 
-.grid-container {
+.ifood-grid-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 2em;
 }
 
 .menu-item {
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 1em;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 1.5em;
     text-align: center;
-    background-color: #fff;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    background-color: var(--ifood-white);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .menu-item img {
     max-width: 100%;
-    height: 150px;
+    height: 180px;
     object-fit: cover;
-    border-radius: 4px;
+    border-radius: 8px;
     margin-bottom: 1em;
 }
 
 .menu-item h3 {
     margin-top: 0;
-    color: #555;
+    color: var(--ifood-text-color);
+    font-size: 1.3em;
+    font-weight: 600;
 }
 
 .menu-item p {
-    font-size: 0.9em;
-    color: #777;
+    font-size: 0.95em;
+    color: var(--ifood-dark-gray);
     margin-bottom: 1em;
+    flex-grow: 1;
 }
 
 .menu-item .price {
-    font-size: 1.2em;
-    color: #28a745;
-    font-weight: bold;
+    font-size: 1.4em;
+    color: var(--ifood-red);
+    font-weight: 700;
     margin-bottom: 1em;
 }
 
 .menu-item button {
-    background-color: #007bff;
-    color: white;
+    background-color: var(--ifood-red);
+    color: var(--ifood-white);
     border: none;
     padding: 0.8em 1.5em;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 1em;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
 }
 
 .menu-item button:hover {
-    background-color: #0056b3;
+    background-color: var(--ifood-dark-red);
 }
 
-#cart-items .cart-item {
+.ifood-cart-items .cart-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -119,62 +163,64 @@ h2 {
     border-bottom: 1px solid #eee;
 }
 
-#cart-items .cart-item:last-child {
+.ifood-cart-items .cart-item:last-child {
     border-bottom: none;
 }
 
-#cart-items .cart-item-info {
+.ifood-cart-items .cart-item-info {
     display: flex;
     align-items: center;
 }
 
-#cart-items .cart-item-info img {
-    width: 60px;
-    height: 60px;
+.ifood-cart-items .cart-item-info img {
+    width: 70px;
+    height: 70px;
     object-fit: cover;
-    border-radius: 4px;
+    border-radius: 8px;
     margin-right: 1em;
 }
 
-#cart-items .cart-item-details h4 {
+.ifood-cart-items .cart-item-details h4 {
     margin: 0 0 0.5em 0;
-    color: #555;
+    color: var(--ifood-text-color);
+    font-size: 1.1em;
 }
 
-#cart-items .cart-item-details p {
+.ifood-cart-items .cart-item-details p {
     margin: 0;
-    color: #777;
+    color: var(--ifood-dark-gray);
 }
 
-#cart-items .cart-item-actions {
+.ifood-cart-items .cart-item-actions {
     display: flex;
     align-items: center;
 }
 
-#cart-items .cart-item-actions button {
-    background-color: #dc3545;
-    color: white;
+.ifood-cart-items .cart-item-actions button {
+    background-color: var(--ifood-red);
+    color: var(--ifood-white);
     border: none;
     padding: 0.5em 0.8em;
     border-radius: 5px;
     cursor: pointer;
     font-size: 0.9em;
     margin-left: 1em;
+    transition: background-color 0.3s ease;
 }
 
-#cart-items .cart-item-actions button:hover {
-    background-color: #c82333;
+.ifood-cart-items .cart-item-actions button:hover {
+    background-color: var(--ifood-dark-red);
 }
 
-#cart-items .cart-item-actions .quantity-controls {
+.ifood-cart-items .cart-item-actions .quantity-controls {
     display: flex;
     align-items: center;
     margin-left: 1em;
 }
 
-#cart-items .cart-item-actions .quantity-controls button {
-    background-color: #6c757d;
-    color: white;
+.ifood-cart-items .cart-item-actions .quantity-controls button {
+    background-color: #ccc;
+    color: var(--ifood-text-color);
     border: none;
     padding: 0.3em 0.6em;
     border-radius: 3px;
@@ -183,40 +229,44 @@ h2 {
     margin: 0 0.2em;
 }
 
-#cart-items .cart-item-actions .quantity-controls button:hover {
-    background-color: #5a6268;
+.ifood-cart-items .cart-item-actions .quantity-controls button:hover {
+    background-color: #bbb;
 }
 
-#cart-items .cart-item-actions .quantity-controls span {
-    font-weight: bold;
+.ifood-cart-items .cart-item-actions .quantity-controls span {
+    font-weight: 600;
     margin: 0 0.5em;
+    color: var(--ifood-text-color);
 }
 
-#cart-summary {
+.ifood-cart-summary {
     text-align: right;
     margin-top: 2em;
     border-top: 1px solid #eee;
     padding-top: 1.5em;
 }
 
-#cart-summary p {
-    font-size: 1.5em;
-    font-weight: bold;
-    margin-bottom: 1em;
+.ifood-cart-summary p {
+    font-size: 1.6em;
+    font-weight: 700;
+    margin-bottom: 1.5em;
+    color: var(--ifood-text-color);
 }
 
-#cart-summary button {
+.ifood-cart-summary button {
     margin-left: 1em;
     padding: 1em 2em;
-    border-radius: 5px;
+    border-radius: 8px;
     font-size: 1.1em;
     cursor: pointer;
     border: none;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
 }
 
 #checkout-btn {
-    background-color: #28a745;
-    color: white;
+    background-color: var(--ifood-green);
+    color: var(--ifood-white);
 }
 
 #checkout-btn:hover {
@@ -224,22 +274,20 @@ h2 {
 }
 
 #continue-shopping-btn {
-    background-color: #6c757d;
-    color: white;
+    background-color: var(--ifood-gray);
+    color: var(--ifood-text-color);
+    border: 1px solid #ccc;
 }
 
 #continue-shopping-btn:hover {
-    background-color: #5a6268;
+    background-color: #e0e0e0;
 }
 
-footer {
+.ifood-footer {
     text-align: center;
     padding: 1.5em;
-    background-color: #333;
-    color: #fff;
-    position: relative;
-    bottom: 0;
-    width: 100%;
+    background-color: var(--ifood-text-color);
+    color: var(--ifood-white);
     margin-top: 2em;
 }
 
@@ -249,34 +297,36 @@ footer {
 
 /* Responsividade */
 @media (max-width: 768px) {
-    header {
-        flex-direction: column;
+    .ifood-header {
         padding: 1em;
     }
 
-    nav button {
-        margin-top: 1em;
+    .header-content {
+        flex-direction: column;
     }
 
-    .grid-container {
+    .ifood-logo {
+        margin-bottom: 1em;
+    }
+
+    .ifood-grid-container {
         grid-template-columns: 1fr;
     }
 
-    #cart-items .cart-item {
+    .ifood-cart-items .cart-item {
         flex-direction: column;
         align-items: flex-start;
     }
 
-    #cart-items .cart-item-actions {
+    .ifood-cart-items .cart-item-actions {
         margin-top: 1em;
         width: 100%;
         justify-content: space-between;
     }
 
-    #cart-summary button {
+    .ifood-cart-summary button {
         width: 100%;
         margin-left: 0;
         margin-bottom: 1em;
     }
 }
-

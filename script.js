@@ -1,4 +1,3 @@
-alert();
 document.addEventListener(\'DOMContentLoaded\', () => {
     const menuItemsContainer = document.getElementById(\'menu-items\');
     const cartItemsContainer = document.getElementById(\'cart-items\');

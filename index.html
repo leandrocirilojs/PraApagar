@@ -1,45 +1,49 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-   <meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Marmita & Cia</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header>
-        <h1>Marmita & Cia</h1>
-        <nav>
-            <button id="view-cart-btn">Ver Carrinho (<span id="cart-count">0</span>)</button>
-        </nav>
+    <header class="ifood-header">
+        <div class="header-content">
+            <img src="https://www.ifood.com.br/static/images/ifood-logo.svg" alt="iFood Logo" class="ifood-logo">
+            <nav>
+                <button id="view-cart-btn" class="ifood-button primary">Ver Carrinho (<span id="cart-count">0</span>)</button>
+            </nav>
+        </div>
     </header>
 
-    <main>
-        <section id="menu">
-            <h2>Nosso Cardápio</h2>
-            <div id="menu-items" class="grid-container">
+    <main class="ifood-main">
+        <section id="menu" class="ifood-section">
+            <h2 class="section-title">Nosso Cardápio</h2>
+            <div id="menu-items" class="ifood-grid-container">
                 <!-- Itens do cardápio serão carregados aqui pelo JavaScript -->
             </div>
         </section>
 
-        <section id="cart" class="hidden">
-            <h2>Seu Carrinho</h2>
-            <div id="cart-items">
+        <section id="cart" class="ifood-section hidden">
+            <h2 class="section-title">Seu Carrinho</h2>
+            <div id="cart-items" class="ifood-cart-items">
                 <!-- Itens do carrinho serão carregados aqui pelo JavaScript -->
             </div>
-            <div id="cart-summary">
+            <div id="cart-summary" class="ifood-cart-summary">
                 <p>Total: R$ <span id="cart-total">0.00</span></p>
-                <button id="checkout-btn">Finalizar Pedido via WhatsApp</button>
-                <button id="continue-shopping-btn">Continuar Comprando</button>
+                <button id="checkout-btn" class="ifood-button primary">Finalizar Pedido via WhatsApp</button>
+                <button id="continue-shopping-btn" class="ifood-button secondary">Continuar Comprando</button>
             </div>
         </section>
     </main>
 
-    <footer>
+    <footer class="ifood-footer">
         <p>&copy; 2023 Marmita & Cia. Todos os direitos reservados.</p>
     </footer>
 
     <script src="script.js"></script>
 </body>
 </html>
-

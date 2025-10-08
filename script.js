@@ -4,6 +4,7 @@ document.addEventListener(\'DOMContentLoaded\', () => {
     const cartTotalSpan = document.getElementById(\'cart-total\');
     const cartCountSpan = document.getElementById(\'cart-count\');
     const floatingCartBtn = document.getElementById(\'floating-cart-btn\');
+    const headerCartBtn = document.getElementById(\'view-cart-btn\'); // O botão no header ainda existe para a navegação
     const checkoutBtn = document.getElementById(\'checkout-btn\');
     const continueShoppingBtn = document.getElementById(\'continue-shopping-btn\');
     const menuSection = document.getElementById(\'menu\');
@@ -229,6 +230,14 @@ document.addEventListener(\'DOMContentLoaded\', () => {
     // Event listeners para os botões do carrinho
     if (floatingCartBtn) {
         floatingCartBtn.addEventListener(\'click\', () => {
+            menuSection.classList.add(\'hidden\');
+            cartSection.classList.remove(\'hidden\');
+            updateCart();
+        });
+    }
+
+    if (headerCartBtn) {
+        headerCartBtn.addEventListener(\'click\', () => {
             menuSection.classList.add(\'hidden\');
             cartSection.classList.remove(\'hidden\');
             updateCart();

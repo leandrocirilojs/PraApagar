@@ -17,35 +17,35 @@ document.addEventListener('DOMContentLoaded', () => {
             name: 'Marmita de Frango Grelhado',
             description: 'Frango grelhado, arroz integral, feijão e salada mista.',
             price: 25.00,
-            image: 'https://via.placeholder.com/150/FF5733/FFFFFF?text=Frango'
+            image: 'https://phygital-files.mercafacil.com/tartufo-bucket/uploads/produto/marmita_do_chef_estrogonofe_frango_400g_520c4b57-b1bd-45e8-9791-10da2169a31c.png'
         },
         {
             id: 2,
             name: 'Marmita de Carne Moída',
             description: 'Carne moída com legumes, purê de batata e brócolis.',
             price: 28.00,
-            image: 'https://via.placeholder.com/150/C70039/FFFFFF?text=Carne'
+            image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTplVEIeFXJp4XwuZf4l6UN3N778qx_EOT0oRuUDstZOUTnhDvBdN_ZZPN6&s=10'
         },
         {
             id: 3,
             name: 'Marmita Vegetariana',
             description: 'Mix de legumes salteados, grão de bico e quinoa.',
             price: 22.00,
-            image: 'https://via.placeholder.com/150/900C3F/FFFFFF?text=Veggie'
+            image: 'https://cdn.shopify.com/s/files/1/0127/3711/8265/files/243029377_1042477169819729_6514968479383064676_n.jpg?v=1642721207'
         },
         {
             id: 4,
             name: 'Coca-Cola Lata',
             description: 'Refrigerante Coca-Cola, 350ml.',
             price: 6.00,
-            image: 'https://via.placeholder.com/150/FFC300/FFFFFF?text=Coca'
+            image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRsOi38z15AjNHrIfH3Sq9wkR2mxN7Svl8vdszKmR5-6w&s=10'
         },
         {
             id: 5,
             name: 'Água Mineral',
             description: 'Água mineral sem gás, 500ml.',
             price: 3.00,
-            image: 'https://via.placeholder.com/150/DAF7A6/FFFFFF?text=Agua'
+            image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIjh02MzuEZmdiZNdM7x8wLcpjUQJd8wEDjmKp0n8_KA&s=10'
         }
     ];
 
@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
         message += 'Por favor, confirme meu pedido e me informe sobre as opções de pagamento e entrega. Obrigado!';
 
         // Substitua '55DDNNNNNNNNN' pelo número de telefone do restaurante com código do país e DDD
-        const phoneNumber = '5511999999999'; // Exemplo: 55 (Brasil) 11 (DDD SP) 999999999 (Número)
+        const phoneNumber = '5511977930984'; // Exemplo: 55 (Brasil) 11 (DDD SP) 999999999 (Número)
         const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
     }

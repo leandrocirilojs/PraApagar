@@ -1,0 +1,204 @@
+
+document.addEventListener('DOMContentLoaded', () => {
+const menuItemsContainer = document.getElementById('menu-items');
+    const cartItemsContainer = document.getElementById('cart-items');
+    const cartTotalSpan = document.getElementById('cart-total');
+    const cartCountSpan = document.getElementById('cart-count');
+    const viewCartBtn = document.getElementById('view-cart-btn');
+    const checkoutBtn = document.getElementById('checkout-btn');
+    const continueShoppingBtn = document.getElementById('continue-shopping-btn');
+    const menuSection = document.getElementById('menu');
+    const cartSection = document.getElementById('cart');
+
+    let cart = [];
+
+    const menu = [
+        {
+            id: 1,
+            name: 'Marmita de Frango Grelhado',
+            description: 'Frango grelhado, arroz integral, feijão e salada mista.',
+            price: 25.00,
+            image: 'https://via.placeholder.com/150/FF5733/FFFFFF?text=Frango'
+        },
+        {
+            id: 2,
+            name: 'Marmita de Carne Moída',
+            description: 'Carne moída com legumes, purê de batata e brócolis.',
+            price: 28.00,
+            image: 'https://via.placeholder.com/150/C70039/FFFFFF?text=Carne'
+        },
+        {
+            id: 3,
+            name: 'Marmita Vegetariana',
+            description: 'Mix de legumes salteados, grão de bico e quinoa.',
+            price: 22.00,
+            image: 'https://via.placeholder.com/150/900C3F/FFFFFF?text=Veggie'
+        },
+        {
+            id: 4,
+            name: 'Coca-Cola Lata',
+            description: 'Refrigerante Coca-Cola, 350ml.',
+            price: 6.00,
+            image: 'https://via.placeholder.com/150/FFC300/FFFFFF?text=Coca'
+        },
+        {
+            id: 5,
+            name: 'Água Mineral',
+            description: 'Água mineral sem gás, 500ml.',
+            price: 3.00,
+            image: 'https://via.placeholder.com/150/DAF7A6/FFFFFF?text=Agua'
+        }
+    ];
+
+    function renderMenu() {
+        menuItemsContainer.innerHTML = '';
+        menu.forEach(item => {
+            const menuItemDiv = document.createElement('div');
+            menuItemDiv.classList.add('menu-item');
+            menuItemDiv.innerHTML = `
+                <img src="${item.image}" alt="${item.name}">
+                <h3>${item.name}</h3>
+                <p>${item.description}</p>
+                <p class="price">R$ ${item.price.toFixed(2)}</p>
+                <button data-id="${item.id}">Adicionar ao Carrinho</button>
+            `;
+            menuItemsContainer.appendChild(menuItemDiv);
+        });
+
+        document.querySelectorAll('.menu-item button').forEach(button => {
+            button.addEventListener('click', (event) => {
+                const itemId = parseInt(event.target.dataset.id);
+                addToCart(itemId);
+            });
+        });
+    }
+
+    function addToCart(itemId) {
+        const existingItem = cart.find(item => item.id === itemId);
+        if (existingItem) {
+            existingItem.quantity++;
+        } else {
+            const itemToAdd = menu.find(item => item.id === itemId);
+            cart.push({ ...itemToAdd, quantity: 1 });
+        }
+        updateCart();
+    }
+
+    function removeFromCart(itemId) {
+        cart = cart.filter(item => item.id !== itemId);
+        updateCart();
+    }
+
+    function updateQuantity(itemId, change) {
+        const item = cart.find(item => item.id === itemId);
+        if (item) {
+            item.quantity += change;
+            if (item.quantity <= 0) {
+                removeFromCart(itemId);
+            } else {
+                updateCart();
+            }
+        }
+    }
+
+    function updateCart() {
+        cartItemsContainer.innerHTML = '';
+        let total = 0;
+        let itemCount = 0;
+
+        if (cart.length === 0) {
+            cartItemsContainer.innerHTML = '<p>Seu carrinho está vazio.</p>';
+        } else {
+            cart.forEach(item => {
+                const cartItemDiv = document.createElement('div');
+                cartItemDiv.classList.add('cart-item');
+                cartItemDiv.innerHTML = `
+                    <div class="cart-item-info">
+                        <img src="${item.image}" alt="${item.name}">
+                        <div class="cart-item-details">
+                            <h4>${item.name}</h4>
+                            <p>R$ ${item.price.toFixed(2)}</p>
+                        </div>
+                    </div>
+                    <div class="cart-item-actions">
+                        <div class="quantity-controls">
+                            <button data-id="${item.id}" data-action="decrease">-</button>
+                            <span>${item.quantity}</span>
+                            <button data-id="${item.id}" data-action="increase">+</button>
+                        </div>
+                        <button data-id="${item.id}" data-action="remove">Remover</button>
+                    </div>
+                `;
+                cartItemsContainer.appendChild(cartItemDiv);
+                total += item.price * item.quantity;
+                itemCount += item.quantity;
+            });
+        }
+
+        cartTotalSpan.textContent = total.toFixed(2);
+        cartCountSpan.textContent = itemCount;
+
+        document.querySelectorAll('.cart-item-actions button[data-action="decrease"]').forEach(button => {
+            button.addEventListener('click', (event) => {
+                const itemId = parseInt(event.target.dataset.id);
+                updateQuantity(itemId, -1);
+            });
+        });
+
+        document.querySelectorAll('.cart-item-actions button[data-action="increase"]').forEach(button => {
+            button.addEventListener('click', (event) => {
+                const itemId = parseInt(event.target.dataset.id);
+                updateQuantity(itemId, 1);
+            });
+        });
+
+        document.querySelectorAll('.cart-item-actions button[data-action="remove"]').forEach(button => {
+            button.addEventListener('click', (event) => {
+                const itemId = parseInt(event.target.dataset.id);
+                removeFromCart(itemId);
+            });
+        });
+    }
+
+    function generateWhatsAppLink() {
+        if (cart.length === 0) {
+            alert('Seu carrinho está vazio. Adicione itens antes de finalizar o pedido.');
+            return;
+        }
+
+        let message = 'Olá! Gostaria de fazer o seguinte pedido:\n\n';
+        let total = 0;
+
+        cart.forEach(item => {
+            message += `${item.quantity}x ${item.name} - R$ ${(item.price * item.quantity).toFixed(2)}\n`;
+            total += item.price * item.quantity;
+        });
+
+        message += `\nTotal: R$ ${total.toFixed(2)}\n\n`;
+        message += 'Por favor, confirme meu pedido e me informe sobre as opções de pagamento e entrega. Obrigado!';
+
+        // Substitua '55DDNNNNNNNNN' pelo número de telefone do restaurante com código do país e DDD
+        const phoneNumber = '5511999999999'; // Exemplo: 55 (Brasil) 11 (DDD SP) 999999999 (Número)
+        const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+    }
+
+    // Event Listeners
+    viewCartBtn.addEventListener('click', () => {
+        menuSection.classList.add('hidden');
+        cartSection.classList.remove('hidden');
+        updateCart(); // Garante que o carrinho esteja atualizado ao ser visualizado
+    });
+
+    continueShoppingBtn.addEventListener('click', () => {
+        cartSection.classList.add('hidden');
+        menuSection.classList.remove('hidden');
+    });
+
+    checkoutBtn.addEventListener('click', generateWhatsAppLink);
+
+    // Initial render
+    renderMenu();
+    updateCart(); // Para inicializar o contador do carrinho
+});
+

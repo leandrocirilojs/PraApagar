@@ -243,6 +243,7 @@
   <button class="btn green"  id="btn-start" disabled>▶ INICIAR INTERROGATÓRIO</button>
   <button class="btn ghost"  id="btn-stop"  disabled>■ PARAR</button>
   <button class="btn orange" id="btn-report" disabled>📋 RELATÓRIO PDF</button>
+  <button class="btn ghost"  id="btn-cam-switch">🔄 CÂMERA</button>
 </div>
 
 <div class="main">
@@ -359,7 +360,8 @@ const EMOJI  = {happy:'😄',sad:'😢',angry:'😠',fearful:'😨',disgusted:'�
 const PT     = {happy:'Feliz',sad:'Triste',angry:'Raiva',fearful:'Medo',disgusted:'Nojo',surprised:'Surpresa',neutral:'Neutro'};
 const COLORS = {happy:'#ffd600',sad:'#00cfff',angry:'#ff2b2b',fearful:'#a855f7',disgusted:'#4ade80',surprised:'#ff7a00',neutral:'#445566'};
 
-let groqKey = localStorage.getItem('groq_key') || '';
+let groqKey = localStorage.getItem("groq_key") || "";
+let facingMode = "user";
 let phase = 'idle', baselineData = null, baselineFrames = [], baselineTimer = null, baselineElapsed = 0;
 let prevExp = null, microCand = null, alertTO = null, frameSkip = false;
 let groqLoopTimer = null, groqLoopRunning = false, groqCountdown = GROQ_INTERVAL;
@@ -719,7 +721,7 @@ async function init() {
     await loadScript('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js');
 
     sysStatus.textContent='INICIANDO CÂMERA...';
-    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'}});
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facingMode}});
     video.srcObject=stream;
     await new Promise(r=>video.addEventListener('loadedmetadata',r,{once:true}));
 
@@ -738,6 +740,22 @@ async function init() {
     console.error(err);
   }
 }
+
+// Camera switch
+const btnCamSwitch = document.getElementById("btn-cam-switch");
+btnCamSwitch.addEventListener("click", async () => {
+  facingMode = facingMode === "user" ? "environment" : "user";
+  btnCamSwitch.textContent = facingMode === "user" ? "🔄 CÂMERA" : "🔄 FRONTAL";
+  try {
+    if (video.srcObject) { video.srcObject.getTracks().forEach(t => t.stop()); }
+    const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:facingMode}});
+    video.srcObject = stream;
+    sysStatus.textContent = facingMode === "user" ? "CÂMERA FRONTAL" : "CÂMERA TRASEIRA";
+  } catch(e) {
+    sysStatus.textContent = "ERRO CÂMERA: " + e.message;
+    facingMode = facingMode === "user" ? "environment" : "user";
+  }
+});
 
 // PDF Report
 btnReport.addEventListener('click',()=>{

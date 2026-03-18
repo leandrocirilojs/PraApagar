@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lie to Me — Modo Interrogatório + Voz</title>
+<title>Lie to Me — Interrogatório + Voz + FaceMesh</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -190,6 +190,20 @@
   .tl-legend{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:5px;}
   .tl-leg-item{display:flex;align-items:center;gap:3px;font-family:var(--mono);font-size:0.53rem;color:var(--muted);text-transform:capitalize;}
   .tl-leg-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+
+  /* FaceMesh panel */
+  .fm-panel{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:0.8rem;}
+  .fm-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:0.4rem;}
+  .fm-cell{background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:6px;}
+  .fm-label{font-family:var(--mono);font-size:0.5rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;}
+  .fm-value{font-family:var(--mono);font-size:0.82rem;font-weight:700;margin-top:2px;}
+  .fm-sub{font-family:var(--mono);font-size:0.52rem;color:var(--muted);margin-top:1px;}
+  .fm-bar{height:3px;background:var(--border);border-radius:2px;margin-top:4px;overflow:hidden;}
+  .fm-fill{height:100%;border-radius:2px;transition:width 0.35s ease;}
+  .fm-alert{display:none;font-family:var(--mono);font-size:0.58rem;padding:4px 8px;border-radius:3px;margin-top:6px;border-left:2px solid var(--red);background:rgba(255,43,43,0.08);color:var(--red);}
+  .fm-alert.show{display:block;}
+  /* FaceMesh canvas overlay — drawn on top of existing overlay */
+  canvas#fm-overlay{position:absolute;top:0;left:0;width:100%;height:100%;transform:scaleX(-1);z-index:4;pointer-events:none;}
   .bottom-row{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;}
   @media(max-width:480px){.bottom-row{grid-template-columns:1fr;}}
 
@@ -212,7 +226,7 @@
 <div class="header">
   <div>
     <div class="logo-main">LIE TO ME</div>
-    <div class="logo-sub">// INTERROGATÓRIO · ROSTO + VOZ + GROQ AI</div>
+    <div class="logo-sub">// INTERROGATÓRIO · FACEMESH 468pts + VOZ + GROQ AI</div>
   </div>
   <div class="header-right">
     <div class="rec-badge"><div class="rec-dot"></div>AO VIVO</div>
@@ -253,6 +267,7 @@
       <div class="camera-wrap">
         <video id="video" autoplay muted playsinline></video>
         <canvas id="overlay"></canvas>
+        <canvas id="fm-overlay"></canvas>
         <div class="alert-banner" id="alert-banner">
           <span id="al-icon">⚡</span><span id="al-text">ALERTA</span>
         </div>
@@ -387,6 +402,52 @@
     </div>
   </div>
 
+  <!-- FaceMesh Panel -->
+  <div class="fm-panel">
+    <div class="ptitle">
+      🧠 MediaPipe FaceMesh — 468 Pontos
+      <span id="fm-status" style="font-family:var(--mono);font-size:0.55rem;color:var(--muted)">CARREGANDO...</span>
+    </div>
+    <div class="fm-grid">
+      <div class="fm-cell">
+        <div class="fm-label">Piscar / Olhos</div>
+        <div class="fm-value" id="fm-blink" style="color:var(--blue)">—</div>
+        <div class="fm-sub" id="fm-blink-sub">aguardando...</div>
+        <div class="fm-bar"><div class="fm-fill" id="fm-blink-fill" style="width:0%;background:var(--blue)"></div></div>
+      </div>
+      <div class="fm-cell">
+        <div class="fm-label">Direção do Olhar</div>
+        <div class="fm-value" id="fm-gaze" style="color:var(--purple)">—</div>
+        <div class="fm-sub" id="fm-gaze-sub">aguardando...</div>
+      </div>
+      <div class="fm-cell">
+        <div class="fm-label">Assimetria Facial</div>
+        <div class="fm-value" id="fm-asym" style="color:var(--yellow)">—</div>
+        <div class="fm-sub" id="fm-asym-sub">natural vs forçado</div>
+        <div class="fm-bar"><div class="fm-fill" id="fm-asym-fill" style="width:0%;background:var(--yellow)"></div></div>
+      </div>
+      <div class="fm-cell">
+        <div class="fm-label">Tensão Labial</div>
+        <div class="fm-value" id="fm-lips" style="color:var(--orange)">—</div>
+        <div class="fm-sub" id="fm-lips-sub">lábios relaxados</div>
+        <div class="fm-bar"><div class="fm-fill" id="fm-lips-fill" style="width:0%;background:var(--orange)"></div></div>
+      </div>
+      <div class="fm-cell">
+        <div class="fm-label">Elevação Sobrancelha</div>
+        <div class="fm-value" id="fm-brow" style="color:var(--green)">—</div>
+        <div class="fm-sub" id="fm-brow-sub">simétrico</div>
+        <div class="fm-bar"><div class="fm-fill" id="fm-brow-fill" style="width:0%;background:var(--green)"></div></div>
+      </div>
+      <div class="fm-cell">
+        <div class="fm-label">Abertura da Boca</div>
+        <div class="fm-value" id="fm-mouth" style="color:var(--red)">—</div>
+        <div class="fm-sub" id="fm-mouth-sub">fechada</div>
+        <div class="fm-bar"><div class="fm-fill" id="fm-mouth-fill" style="width:0%;background:var(--red)"></div></div>
+      </div>
+    </div>
+    <div class="fm-alert" id="fm-alert">⚠ Sinal detectado</div>
+  </div>
+
   <!-- Screenshot Gallery -->
   <div class="gallery-wrap">
     <div class="ptitle">📸 Galeria de Microexpressões Capturadas
@@ -437,6 +498,12 @@ let phase='idle',baselineData=null,baselineFrames=[],baselineTimer=null,baseline
 let prevExp=null,microCand=null,alertTO=null,frameSkip=false;
 let groqLoopTimer=null,groqLoopRunning=false,groqCountdown=GROQ_INTERVAL;
 let tlData=[],sessionLog=[];
+
+// FaceMesh state
+let fmModel=null,fmRunning=false,fmFrameSkip=false;
+let blinkCount=0,blinkLastTime=0,blinkRate=0;
+let lastEyeOpen={L:1,R:1};
+let fmAlertTO=null;
 
 // Voice state
 let audioCtx=null,analyser=null,micStream=null;
@@ -869,10 +936,11 @@ Responda APENAS em JSON sem markdown:
 
 async function callGroqPassive(b64){
   const vCtx=voiceActive?` | Estresse vocal: ${voiceStressScore}% | Hesitações: ${hesitationCount}`:'';
+  const fmCtx=` | ${getFaceMeshContext()}`;
   const raw=await groqFetch([{role:'user',content:[
     {type:'image_url',image_url:{url:`data:image/jpeg;base64,${b64}`}},
-    {type:'text',text:`Análise passiva como Dr. Cal Lightman.${vCtx?` Dados vocais:${vCtx}`:''}
-JSON sem markdown: {"estado":"...","sinais":"...","voz":"${voiceActive?'análise vocal':'não disponível'}","veredicto":"SINCERO|SUSPEITO|SUPRIMIDO","justificativa":"..."}`}
+    {type:'text',text:`Análise passiva como Dr. Cal Lightman.${vCtx?` Dados vocais:${vCtx}`:''}${fmCtx}
+JSON sem markdown: {"estado":"...","sinais":"...","voz":"${voiceActive?'análise vocal':'não disponível'}","facemesh":"analise os dados do FaceMesh","veredicto":"SINCERO|SUSPEITO|SUPRIMIDO","justificativa":"..."}`}
   ]}],500);
   const d=JSON.parse(raw.replace(/```json|```/g,'').trim());
   renderGroqResult(d,null,false);
@@ -905,6 +973,326 @@ function startGroqLoop(){
 }
 
 function stopGroqLoop(){clearInterval(groqLoopTimer);groqLoopRunning=false;aiTimer.textContent='—';}
+
+
+// ── MEDIAPIPE FACEMESH ─────────────────────────────────────
+
+// Key landmark indices
+const LM={
+  // Eye corners & eyelid
+  L_EYE_TOP:159, L_EYE_BOT:145, L_EYE_L:33,  L_EYE_R:133,
+  R_EYE_TOP:386, R_EYE_BOT:374, R_EYE_L:362, R_EYE_R:263,
+  // Iris center approximation
+  L_IRIS:468, R_IRIS:473,
+  // Brows
+  L_BROW_IN:55,  L_BROW_OUT:46,  L_BROW_MID:52,
+  R_BROW_IN:285, R_BROW_OUT:276, R_BROW_MID:282,
+  // Lips
+  LIP_TOP:13, LIP_BOT:14, LIP_L:61, LIP_R:291,
+  LIP_TOP_OUT:0, LIP_BOT_OUT:17,
+  // Face outline for asymmetry
+  CHIN:152, NOSE_TIP:1, L_CHEEK:234, R_CHEEK:454,
+  // Forehead
+  FOREHEAD:10
+};
+
+function dist(a,b){return Math.sqrt((a.x-b.x)**2+(a.y-b.y)**2+(a.z-b.z)**2);}
+function midpoint(a,b){return{x:(a.x+b.x)/2,y:(a.y+b.y)/2,z:(a.z+b.z)/2};}
+
+function analyzeFaceMesh(landmarks){
+  const lm=landmarks;
+  if(!lm||lm.length<468)return null;
+
+  const results={};
+
+  // ── Eye openness (EAR - Eye Aspect Ratio) ──
+  const lEAR = dist(lm[LM.L_EYE_TOP],lm[LM.L_EYE_BOT]) / dist(lm[LM.L_EYE_L],lm[LM.L_EYE_R]);
+  const rEAR = dist(lm[LM.R_EYE_TOP],lm[LM.R_EYE_BOT]) / dist(lm[LM.R_EYE_L],lm[LM.R_EYE_R]);
+  const avgEAR=(lEAR+rEAR)/2;
+  results.earL=lEAR; results.earR=rEAR; results.earAvg=avgEAR;
+
+  // Blink detection: EAR drops below threshold
+  const BLINK_TH=0.18;
+  const eyesOpen=avgEAR>BLINK_TH;
+  const now=Date.now();
+  if(!eyesOpen&&lastEyeOpen.avg!==false){
+    // eye just closed
+    lastEyeOpen.avg=false;
+    lastEyeOpen.closeTime=now;
+  } else if(eyesOpen&&lastEyeOpen.avg===false){
+    // eye just opened = completed blink
+    blinkCount++;
+    lastEyeOpen.avg=true;
+    const dur=now-lastEyeOpen.closeTime;
+    // blink rate per minute estimate
+    if(blinkLastTime){
+      const interval=(now-blinkLastTime)/1000;
+      blinkRate=Math.round(60/interval);
+    }
+    blinkLastTime=now;
+  } else if(eyesOpen){ lastEyeOpen.avg=true; }
+  results.blinks=blinkCount; results.blinkRate=blinkRate; results.eyesOpen=eyesOpen;
+
+  // ── Gaze direction ──
+  // Compare iris position relative to eye corners
+  if(lm.length>473){
+    const lIris=lm[LM.L_IRIS];
+    const lEyeCenter=midpoint(lm[LM.L_EYE_L],lm[LM.L_EYE_R]);
+    const lEyeWidth=dist(lm[LM.L_EYE_L],lm[LM.L_EYE_R]);
+    const lGazeX=(lIris.x-lEyeCenter.x)/lEyeWidth;
+    const lGazeY=(lIris.y-lEyeCenter.y)/(lEyeWidth*0.5);
+
+    const rIris=lm[LM.R_IRIS];
+    const rEyeCenter=midpoint(lm[LM.R_EYE_L],lm[LM.R_EYE_R]);
+    const rEyeWidth=dist(lm[LM.R_EYE_L],lm[LM.R_EYE_R]);
+    const rGazeX=(rIris.x-rEyeCenter.x)/rEyeWidth;
+    const rGazeY=(rIris.y-rEyeCenter.y)/(rEyeWidth*0.5);
+
+    const gazeX=(lGazeX+rGazeX)/2;
+    const gazeY=(lGazeY+rGazeY)/2;
+
+    let gazeDir='Centro';
+    if(gazeX<-0.08&&gazeY<-0.08)     gazeDir='↖ Cima-Esq (memória)';
+    else if(gazeX>0.08&&gazeY<-0.08) gazeDir='↗ Cima-Dir (imaginação)';
+    else if(gazeY<-0.1)              gazeDir='↑ Para Cima';
+    else if(gazeY>0.1)               gazeDir='↓ Para Baixo';
+    else if(gazeX<-0.1)              gazeDir='← Esquerda';
+    else if(gazeX>0.1)               gazeDir='→ Direita';
+    results.gazeDir=gazeDir; results.gazeX=gazeX; results.gazeY=gazeY;
+  } else {
+    results.gazeDir='—'; results.gazeX=0; results.gazeY=0;
+  }
+
+  // ── Facial asymmetry ──
+  // Compare left vs right brow height relative to nose
+  const noseTip=lm[LM.NOSE_TIP];
+  const lBrow=lm[LM.L_BROW_MID]; const rBrow=lm[LM.R_BROW_MID];
+  const lBrowH=noseTip.y-lBrow.y; const rBrowH=noseTip.y-rBrow.y;
+  const browAsym=Math.abs(lBrowH-rBrowH)/(Math.max(lBrowH,rBrowH)||0.01);
+  results.browAsym=browAsym;
+
+  // Compare left vs right eye openness
+  const eyeAsym=Math.abs(lEAR-rEAR)/(avgEAR||0.01);
+  results.eyeAsym=eyeAsym;
+
+  const totalAsym=Math.min(1,(browAsym+eyeAsym)*0.5);
+  results.totalAsym=totalAsym;
+
+  // ── Lip compression / tension ──
+  const lipH=dist(lm[LM.LIP_TOP],lm[LM.LIP_BOT]);
+  const lipW=dist(lm[LM.LIP_L],lm[LM.LIP_R]);
+  const MAR=lipH/lipW; // Mouth Aspect Ratio
+  results.MAR=MAR;
+  // Lip press: very low MAR = compressed lips
+  results.lipPress=Math.max(0,1-(MAR/0.15));
+  // Mouth open
+  results.mouthOpen=Math.min(1,MAR/0.4);
+
+  // ── Brow elevation (surprise/fear/concern) ──
+  const faceH=dist(lm[LM.FOREHEAD],lm[LM.CHIN]);
+  const lBrowElev=lBrowH/(faceH||0.01);
+  const rBrowElev=rBrowH/(faceH||0.01);
+  results.browElev=(lBrowElev+rBrowElev)/2;
+  results.browAsymDir=lBrowH>rBrowH?'L↑':'R↑';
+
+  return results;
+}
+
+function updateFaceMeshUI(r){
+  if(!r)return;
+
+  // Blink / eyes
+  const earPct=Math.round(r.earAvg*500);
+  document.getElementById('fm-blink').textContent=`${blinkCount} piscadas`;
+  document.getElementById('fm-blink-sub').textContent=
+    blinkRate>25?`${blinkRate}/min — ALTO (estresse)`:
+    blinkRate>15?`${blinkRate}/min — normal`:
+    blinkRate>0?`${blinkRate}/min — baixo`:'aguardando...';
+  const blinkCol=blinkRate>25?'var(--red)':blinkRate>15?'var(--yellow)':'var(--blue)';
+  document.getElementById('fm-blink').style.color=blinkCol;
+  document.getElementById('fm-blink-fill').style.width=Math.min(100,blinkRate*2.5)+'%';
+  document.getElementById('fm-blink-fill').style.background=blinkCol;
+
+  // Gaze
+  document.getElementById('fm-gaze').textContent=r.gazeDir||'Centro';
+  const gazeCol=r.gazeDir&&r.gazeDir!=='Centro'?'var(--purple)':'var(--muted)';
+  document.getElementById('fm-gaze').style.color=gazeCol;
+  document.getElementById('fm-gaze-sub').textContent=
+    r.gazeDir?.includes('memória')?'⚠ acesso a memória':
+    r.gazeDir?.includes('imaginação')?'⚠ construindo resposta':
+    r.gazeDir?.includes('Baixo')?'possível vergonha/tristeza':'movimento normal';
+
+  // Asymmetry
+  const asymPct=Math.round(r.totalAsym*100);
+  document.getElementById('fm-asym').textContent=asymPct+'%';
+  const asymCol=asymPct>35?'var(--red)':asymPct>20?'var(--orange)':'var(--green)';
+  document.getElementById('fm-asym').style.color=asymCol;
+  document.getElementById('fm-asym-sub').textContent=
+    asymPct>35?'⚠ expressão possivelmente forçada':
+    asymPct>20?'leve assimetria':
+    'expressão simétrica — natural';
+  document.getElementById('fm-asym-fill').style.width=Math.min(100,asymPct*2)+'%';
+  document.getElementById('fm-asym-fill').style.background=asymCol;
+
+  // Lip tension
+  const lipPct=Math.round(r.lipPress*100);
+  document.getElementById('fm-lips').textContent=lipPct+'%';
+  const lipCol=lipPct>60?'var(--red)':lipPct>35?'var(--orange)':'var(--green)';
+  document.getElementById('fm-lips').style.color=lipCol;
+  document.getElementById('fm-lips-sub').textContent=
+    lipPct>60?'⚠ lábios comprimidos — tensão/raiva':
+    lipPct>35?'leve tensão labial':'lábios relaxados';
+  document.getElementById('fm-lips-fill').style.width=lipPct+'%';
+  document.getElementById('fm-lips-fill').style.background=lipCol;
+
+  // Brow elevation
+  const browPct=Math.round(r.browElev*300);
+  const browAsymPct=Math.round(r.browAsym*100);
+  document.getElementById('fm-brow').textContent=browAsymPct>15?`Asim. ${r.browAsymDir}`:'Simétrico';
+  const browCol=browAsymPct>25?'var(--red)':browAsymPct>15?'var(--orange)':'var(--green)';
+  document.getElementById('fm-brow').style.color=browCol;
+  document.getElementById('fm-brow-sub').textContent=
+    browAsymPct>25?'⚠ assimetria — dúvida/desprezo':
+    browAsymPct>15?'leve assimetria':'sobrancelhas simétricas';
+  document.getElementById('fm-brow-fill').style.width=Math.min(100,browAsymPct*3)+'%';
+  document.getElementById('fm-brow-fill').style.background=browCol;
+
+  // Mouth open
+  const mouthPct=Math.round(r.mouthOpen*100);
+  document.getElementById('fm-mouth').textContent=
+    mouthPct>60?'Aberta':mouthPct>25?'Entreaberta':'Fechada';
+  document.getElementById('fm-mouth').style.color=
+    mouthPct>60?'var(--red)':mouthPct>25?'var(--orange)':'var(--muted)';
+  document.getElementById('fm-mouth-sub').textContent=
+    mouthPct>60?'surpresa ou fala':
+    mouthPct>25?'boca levemente aberta':'boca fechada';
+  document.getElementById('fm-mouth-fill').style.width=mouthPct+'%';
+
+  // Combined alert
+  const alerts=[];
+  if(blinkRate>28) alerts.push('piscar acelerado');
+  if(asymPct>35)   alerts.push('assimetria alta — expressão forçada');
+  if(lipPct>65)    alerts.push('lábios comprimidos — tensão');
+  if(browAsymPct>25)alerts.push('sobrancelha assimétrica — desprezo/dúvida');
+  if(r.gazeDir?.includes('imaginação')) alerts.push('olhar cima-direita — construindo resposta');
+  if(r.gazeDir?.includes('memória'))    alerts.push('olhar cima-esquerda — acessando memória');
+
+  const alertEl2=document.getElementById('fm-alert');
+  if(alerts.length){
+    alertEl2.textContent='⚠ '+alerts.join(' · ');
+    alertEl2.classList.add('show');
+  } else {
+    alertEl2.classList.remove('show');
+  }
+}
+
+function drawFaceMeshOverlay(landmarks){
+  const fmOv=document.getElementById('fm-overlay');
+  const vW=video.videoWidth,vH=video.videoHeight;
+  fmOv.width=vW; fmOv.height=vH;
+  const ctx=fmOv.getContext('2d');
+  ctx.clearRect(0,0,vW,vH);
+  if(!landmarks||!landmarks.length)return;
+  const lm=landmarks;
+
+  // Draw selected landmark dots
+  const keyGroups=[
+    {pts:[LM.L_EYE_TOP,LM.L_EYE_BOT,LM.L_EYE_L,LM.L_EYE_R,LM.R_EYE_TOP,LM.R_EYE_BOT,LM.R_EYE_L,LM.R_EYE_R],col:'rgba(0,207,255,0.7)',r:2},
+    {pts:[LM.L_BROW_IN,LM.L_BROW_OUT,LM.L_BROW_MID,LM.R_BROW_IN,LM.R_BROW_OUT,LM.R_BROW_MID],col:'rgba(255,214,0,0.7)',r:2},
+    {pts:[LM.LIP_TOP,LM.LIP_BOT,LM.LIP_L,LM.LIP_R,LM.LIP_TOP_OUT,LM.LIP_BOT_OUT],col:'rgba(255,122,0,0.8)',r:2},
+    {pts:[LM.NOSE_TIP,LM.CHIN,LM.FOREHEAD],col:'rgba(0,255,136,0.5)',r:2},
+  ];
+
+  keyGroups.forEach(g=>{
+    g.pts.forEach(i=>{
+      if(!lm[i])return;
+      ctx.beginPath();
+      ctx.arc(lm[i].x*vW,lm[i].y*vH,g.r,0,Math.PI*2);
+      ctx.fillStyle=g.col;ctx.fill();
+    });
+  });
+
+  // Iris dots
+  if(lm.length>473){
+    [LM.L_IRIS,LM.R_IRIS].forEach(i=>{
+      if(!lm[i])return;
+      ctx.beginPath();ctx.arc(lm[i].x*vW,lm[i].y*vH,3,0,Math.PI*2);
+      ctx.fillStyle='rgba(168,85,247,0.9)';ctx.fill();
+    });
+  }
+
+  // Draw brow line
+  const browPts=[LM.L_BROW_OUT,LM.L_BROW_MID,LM.L_BROW_IN];
+  ctx.strokeStyle='rgba(255,214,0,0.4)';ctx.lineWidth=1;
+  ctx.beginPath();
+  browPts.forEach((i,idx)=>{
+    if(!lm[i])return;
+    idx===0?ctx.moveTo(lm[i].x*vW,lm[i].y*vH):ctx.lineTo(lm[i].x*vW,lm[i].y*vH);
+  });
+  ctx.stroke();
+  const browPtsR=[LM.R_BROW_IN,LM.R_BROW_MID,LM.R_BROW_OUT];
+  ctx.beginPath();
+  browPtsR.forEach((i,idx)=>{
+    if(!lm[i])return;
+    idx===0?ctx.moveTo(lm[i].x*vW,lm[i].y*vH):ctx.lineTo(lm[i].x*vW,lm[i].y*vH);
+  });
+  ctx.stroke();
+}
+
+async function initFaceMesh(){
+  try{
+    document.getElementById('fm-status').textContent='CARREGANDO...';
+    await loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/face_mesh.js');
+    await loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/camera_utils.js');
+
+    fmModel=new FaceMesh({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/${f}`});
+    fmModel.setOptions({
+      maxNumFaces:1,
+      refineLandmarks:true,  // enables iris tracking (478 landmarks)
+      minDetectionConfidence:0.5,
+      minTrackingConfidence:0.5
+    });
+
+    fmModel.onResults(results=>{
+      if(results.multiFaceLandmarks&&results.multiFaceLandmarks.length>0){
+        const lm=results.multiFaceLandmarks[0];
+        const analysis=analyzeFaceMesh(lm);
+        if(analysis) updateFaceMeshUI(analysis);
+        drawFaceMeshOverlay(lm);
+        document.getElementById('fm-status').textContent='ATIVO — '+lm.length+' pts';
+        document.getElementById('fm-status').style.color='var(--green)';
+      } else {
+        document.getElementById('fm-overlay').getContext('2d').clearRect(0,0,video.videoWidth,video.videoHeight);
+      }
+    });
+
+    // Run FaceMesh on video frames
+    const fmLoop=async()=>{
+      if(!fmFrameSkip&&video.readyState>=2){
+        fmFrameSkip=true;
+        try{ await fmModel.send({image:video}); }catch(e){}
+        setTimeout(()=>{fmFrameSkip=false;},200); // 5fps for FaceMesh to not overload
+      }
+      requestAnimationFrame(fmLoop);
+    };
+    requestAnimationFrame(fmLoop);
+    document.getElementById('fm-status').textContent='INICIALIZADO';
+  }catch(e){
+    document.getElementById('fm-status').textContent='ERRO: '+e.message;
+    document.getElementById('fm-status').style.color='var(--red)';
+    console.warn('FaceMesh error:',e);
+  }
+}
+
+// Build FaceMesh context string for Groq
+function getFaceMeshContext(){
+  const bRate=blinkRate>0?blinkRate+'/min':'—';
+  const asym=document.getElementById('fm-asym').textContent||'—';
+  const lips=document.getElementById('fm-lips').textContent||'—';
+  const gaze=document.getElementById('fm-gaze').textContent||'—';
+  const brow=document.getElementById('fm-brow').textContent||'—';
+  return `FaceMesh: piscar=${bRate} | assimetria=${asym} | lábios=${lips} | olhar=${gaze} | sobrancelha=${brow}`;
+}
 
 // ── FACE API ───────────────────────────────────────────────
 function updateEmotion(exp){
@@ -1130,6 +1518,8 @@ async function init(){
     sysStatus.textContent='SISTEMA ATIVO';
     setPhase('idle','CLIQUE EM "CALIBRAR BASELINE" PARA COMEÇAR');
     requestAnimationFrame(detect);
+    // Start FaceMesh in parallel (non-blocking)
+    initFaceMesh().catch(e=>console.warn('FaceMesh:',e));
   }catch(err){sysStatus.textContent='ERRO: '+err.message;console.error(err);}
 }
 

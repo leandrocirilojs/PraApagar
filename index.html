@@ -6,1076 +6,753 @@
 <title>Lie to Me — Modo Interrogatório</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #040407;
-  --panel: #090910;
-  --panel2: #0d0d16;
-  --border: #181828;
-  --border2: #222238;
-  --red: #ff2020;
-  --orange: #ff7a00;
-  --yellow: #ffd600;
-  --green: #00ff88;
-  --blue: #00d4ff;
-  --purple: #b060ff;
-  --text: #d8e8f0;
-  --muted: #3a4a5a;
-  --mono: 'Share Tech Mono', monospace;
-  --dis: 'Rajdhani', sans-serif;
-}
+  :root {
+    --bg: #050508; --panel: #0b0b12; --panel2: #0e0e18; --border: #1a1a2e;
+    --red: #ff2b2b; --orange: #ff7a00; --yellow: #ffd600; --green: #00ff88;
+    --blue: #00cfff; --purple: #a855f7; --text: #dde8f0; --muted: #445566;
+    --mono: 'Share Tech Mono', monospace; --display: 'Rajdhani', sans-serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:var(--bg); color:var(--text); font-family:var(--display);
+    min-height:100vh; display:flex; flex-direction:column; align-items:center;
+    padding:1rem; gap:0.8rem; overflow-x:hidden;
+  }
+  body::after {
+    content:''; position:fixed; inset:0;
+    background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px);
+    pointer-events:none; z-index:999;
+  }
+  .header {
+    width:100%; max-width:780px;
+    display:flex; align-items:center; justify-content:space-between;
+    padding-bottom:0.5rem; border-bottom:1px solid var(--border);
+  }
+  .logo-main {
+    font-size:1.6rem; font-weight:700; letter-spacing:0.15em;
+    color:var(--red); text-transform:uppercase; line-height:1;
+    text-shadow:0 0 24px rgba(255,43,43,0.6);
+  }
+  .logo-sub { font-family:var(--mono); font-size:0.55rem; color:var(--muted); letter-spacing:0.2em; margin-top:2px; }
+  .header-right { display:flex; flex-direction:column; align-items:flex-end; gap:3px; }
+  .rec-badge { display:flex; align-items:center; gap:6px; font-family:var(--mono); font-size:0.62rem; color:var(--red); }
+  .rec-dot { width:6px; height:6px; border-radius:50%; background:var(--red); animation:blink 1s step-end infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  #sys-status { font-family:var(--mono); font-size:0.58rem; color:var(--muted); }
 
-*{margin:0;padding:0;box-sizing:border-box;}
+  .api-setup {
+    width:100%; max-width:780px;
+    background:var(--panel); border:1px solid var(--orange); border-radius:6px;
+    padding:0.8rem 1rem; display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap;
+  }
+  .api-setup label { font-family:var(--mono); font-size:0.65rem; color:var(--orange); letter-spacing:0.1em; white-space:nowrap; }
+  .api-setup input {
+    flex:1; min-width:200px; background:var(--bg); border:1px solid var(--border); border-radius:4px;
+    padding:0.4rem 0.7rem; font-family:var(--mono); font-size:0.65rem; color:var(--text); outline:none;
+  }
+  .api-setup input:focus { border-color:var(--orange); }
+  .api-setup small { font-family:var(--mono); font-size:0.52rem; color:var(--muted); width:100%; }
 
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--dis);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0.8rem;
-  gap: 0.7rem;
-  overflow-x: hidden;
-}
+  .btn {
+    background:var(--red); color:#fff; border:none; border-radius:4px;
+    padding:0.4rem 1rem; font-family:var(--mono); font-size:0.65rem; font-weight:700;
+    letter-spacing:0.1em; cursor:pointer; text-transform:uppercase; transition:opacity 0.2s; white-space:nowrap;
+  }
+  .btn:hover { opacity:0.82; } .btn:disabled { opacity:0.35; cursor:not-allowed; }
+  .btn.ghost  { background:var(--panel2); border:1px solid var(--border); color:var(--muted); }
+  .btn.green  { background:var(--green);  color:#000; }
+  .btn.blue   { background:var(--blue);   color:#000; }
+  .btn.orange { background:var(--orange); color:#000; }
 
-/* scanlines */
-body::after {
-  content:'';
-  position:fixed;inset:0;
-  background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.06) 2px,rgba(0,0,0,0.06) 4px);
-  pointer-events:none;z-index:9999;
-}
+  .phase-banner {
+    width:100%; max-width:780px; padding:0.55rem 1rem; border-radius:4px;
+    font-family:var(--mono); font-size:0.65rem; letter-spacing:0.12em; text-transform:uppercase;
+    display:flex; align-items:center; justify-content:space-between; transition:all 0.4s ease;
+  }
+  .phase-banner.idle     { background:rgba(30,30,46,0.5);       border:1px solid var(--border); color:var(--muted); }
+  .phase-banner.baseline { background:rgba(0,207,255,0.08);     border:1px solid var(--blue);   color:var(--blue); }
+  .phase-banner.ready    { background:rgba(0,255,136,0.08);     border:1px solid var(--green);  color:var(--green); }
+  .phase-banner.active   { background:rgba(255,43,43,0.08);     border:1px solid var(--red);    color:var(--red); }
+  .phase-prog { display:flex; align-items:center; gap:6px; }
+  .phase-bar  { width:80px; height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
+  .phase-fill { height:100%; background:var(--blue); border-radius:2px; transition:width 0.5s linear; }
 
-/* ── Header ── */
-.hdr {
-  width:100%;max-width:820px;
-  display:flex;align-items:center;justify-content:space-between;
-  padding-bottom:0.5rem;
-  border-bottom:1px solid var(--border);
-}
-.hdr-logo { line-height:1; }
-.hdr-logo span {
-  display:block;
-  font-size:1.7rem;font-weight:700;letter-spacing:0.18em;
-  color:var(--red);text-transform:uppercase;
-  text-shadow:0 0 30px rgba(255,32,32,0.55);
-}
-.hdr-logo small {
-  font-family:var(--mono);font-size:0.52rem;color:var(--muted);letter-spacing:0.2em;
-}
-.hdr-right { display:flex;flex-direction:column;align-items:flex-end;gap:3px; }
-.rec { display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:0.6rem;color:var(--red); }
-.rec-dot { width:6px;height:6px;border-radius:50%;background:var(--red);animation:blink 1s step-end infinite; }
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-#sys { font-family:var(--mono);font-size:0.55rem;color:var(--muted); }
+  .controls { width:100%; max-width:780px; display:flex; gap:6px; flex-wrap:wrap; }
+  .main { width:100%; max-width:780px; display:flex; flex-direction:column; gap:0.8rem; }
 
-/* ── API bar ── */
-.api-bar {
-  width:100%;max-width:820px;
-  background:var(--panel);border:1px solid var(--border2);border-radius:5px;
-  padding:0.65rem 0.9rem;
-  display:flex;align-items:center;gap:0.7rem;flex-wrap:wrap;
-}
-.api-bar label { font-family:var(--mono);font-size:0.6rem;color:var(--orange);letter-spacing:0.1em;white-space:nowrap; }
-.api-bar input {
-  flex:1;min-width:180px;
-  background:var(--bg);border:1px solid var(--border2);border-radius:3px;
-  padding:0.35rem 0.6rem;font-family:var(--mono);font-size:0.62rem;color:var(--text);outline:none;
-}
-.api-bar input:focus{border-color:var(--orange);}
-.api-bar small{font-family:var(--mono);font-size:0.52rem;color:var(--muted);width:100%;}
-.btn {
-  background:var(--red);color:#fff;border:none;border-radius:3px;
-  padding:0.35rem 0.9rem;font-family:var(--mono);font-size:0.62rem;font-weight:700;
-  letter-spacing:0.1em;cursor:pointer;text-transform:uppercase;transition:opacity 0.2s;white-space:nowrap;
-}
-.btn:hover{opacity:0.82;}.btn:disabled{opacity:0.35;cursor:not-allowed;}
-.btn.ghost{background:transparent;border:1px solid var(--border2);color:var(--muted);}
-.btn.green{background:var(--green);color:#000;}
-.btn.blue{background:var(--blue);color:#000;}
-.btn.orange{background:var(--orange);color:#000;}
+  .top-row { display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; }
+  @media(max-width:580px) { .top-row { grid-template-columns:1fr; } }
 
-/* ── Phase banner ── */
-.phase-banner {
-  width:100%;max-width:820px;
-  padding:0.55rem 1rem;
-  border-radius:4px;
-  font-family:var(--mono);font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;
-  display:flex;align-items:center;justify-content:space-between;
-  transition:all 0.4s ease;
-}
-.phase-banner.baseline { background:rgba(0,212,255,0.08);border:1px solid var(--blue);color:var(--blue); }
-.phase-banner.ready    { background:rgba(0,255,136,0.08);border:1px solid var(--green);color:var(--green); }
-.phase-banner.active   { background:rgba(255,32,32,0.08);border:1px solid var(--red);color:var(--red); }
-.phase-banner.idle     { background:rgba(30,30,40,0.5);border:1px solid var(--border2);color:var(--muted); }
+  .camera-wrap {
+    position:relative; background:#000;
+    border:1px solid var(--border); border-radius:4px; overflow:hidden;
+  }
+  .camera-wrap::before {
+    content:''; position:absolute; inset:-1px;
+    background:linear-gradient(135deg,var(--red),transparent 40%,var(--blue));
+    border-radius:4px; opacity:0.3; z-index:0;
+  }
+  video {
+    display:block; width:100%; aspect-ratio:4/3; object-fit:cover;
+    transform:scaleX(-1); position:relative; z-index:1; background:#000;
+  }
+  canvas#overlay {
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    transform:scaleX(-1); z-index:2; pointer-events:none;
+  }
+  .alert-banner {
+    position:absolute; bottom:0; left:0; right:0;
+    padding:0.45rem 0.8rem; font-family:var(--mono); font-size:0.7rem; font-weight:700;
+    letter-spacing:0.12em; text-transform:uppercase; z-index:3;
+    transform:translateY(100%); transition:transform 0.2s ease;
+    display:flex; align-items:center; gap:6px;
+  }
+  .alert-banner.show { transform:translateY(0); }
+  .alert-banner.suppression { background:rgba(255,122,0,0.92); color:#000; }
+  .alert-banner.micro       { background:rgba(255,43,43,0.92);  color:#fff; }
+  .alert-banner.deviation   { background:rgba(168,85,247,0.92); color:#fff; }
 
-.phase-progress {
-  display:flex;align-items:center;gap:6px;
-}
-.phase-bar {
-  width:80px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;
-}
-.phase-fill {
-  height:100%;background:var(--blue);border-radius:2px;transition:width 0.5s linear;
-}
+  .panel { background:var(--panel); border:1px solid var(--border); border-radius:4px; padding:0.8rem; }
+  .ptitle {
+    font-family:var(--mono); font-size:0.58rem; color:var(--muted);
+    letter-spacing:0.18em; text-transform:uppercase; margin-bottom:0.6rem;
+    display:flex; align-items:center; justify-content:space-between; gap:6px;
+  }
+  .ptitle::before { content:''; display:inline-block; width:5px; height:5px; border:1px solid currentColor; transform:rotate(45deg); flex-shrink:0; }
 
-/* ── Main grid ── */
-.grid {
-  width:100%;max-width:820px;
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap:0.7rem;
-}
-@media(max-width:580px){.grid{grid-template-columns:1fr;}}
+  .emo-big { display:flex; align-items:center; gap:0.8rem; }
+  .emo-ic  { font-size:2.6rem; line-height:1; transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1); }
+  .emo-ic.pop { transform:scale(1.28); }
+  .emo-lbl { font-size:1.35rem; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; line-height:1; }
+  .emo-cf  { font-family:var(--mono); font-size:0.62rem; color:var(--muted); margin-top:2px; }
 
-/* ── Camera ── */
-.cam-wrap {
-  position:relative;background:#000;
-  border:1px solid var(--border);border-radius:5px;overflow:hidden;
-}
-.cam-wrap::before {
-  content:'';position:absolute;inset:-1px;
-  background:linear-gradient(135deg,var(--red),transparent 35%,var(--blue));
-  border-radius:5px;opacity:0.3;z-index:0;
-}
-video {
-  display:block;width:100%;aspect-ratio:4/3;object-fit:cover;
-  transform:scaleX(-1);position:relative;z-index:1;background:#000;
-}
-canvas#ov {
-  position:absolute;top:0;left:0;width:100%;height:100%;
-  transform:scaleX(-1);z-index:2;pointer-events:none;
-}
-.cam-overlay-info {
-  position:absolute;top:8px;left:8px;z-index:3;
-  display:flex;flex-direction:column;gap:3px;
-}
-.cam-tag {
-  font-family:var(--mono);font-size:0.55rem;letter-spacing:0.1em;
-  padding:2px 6px;border-radius:2px;backdrop-filter:blur(4px);
-}
-.cam-tag.baseline-tag { background:rgba(0,212,255,0.18);color:var(--blue);border:1px solid rgba(0,212,255,0.3); }
-.cam-tag.deviation-tag { background:rgba(255,32,32,0.2);color:var(--red);border:1px solid rgba(255,32,32,0.35); }
+  .bars { display:flex; flex-direction:column; gap:5px; }
+  .bar-row { display:flex; align-items:center; gap:5px; }
+  .bar-lbl { font-family:var(--mono); font-size:0.56rem; color:var(--muted); width:62px; flex-shrink:0; text-transform:capitalize; }
+  .bar-track { flex:1; height:3px; background:var(--border); border-radius:2px; overflow:hidden; }
+  .bar-fill { height:100%; border-radius:2px; background:var(--muted); transition:width 0.3s ease; }
+  .bar-num { font-family:var(--mono); font-size:0.56rem; color:var(--muted); width:26px; text-align:right; flex-shrink:0; }
 
-.alert-banner {
-  position:absolute;bottom:0;left:0;right:0;
-  padding:0.42rem 0.8rem;
-  font-family:var(--mono);font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;
-  z-index:3;transform:translateY(100%);transition:transform 0.18s ease;
-  display:flex;align-items:center;gap:6px;
-}
-.alert-banner.show{transform:translateY(0);}
-.alert-banner.sup{background:rgba(255,122,0,0.93);color:#000;}
-.alert-banner.micro{background:rgba(255,32,32,0.93);color:#fff;}
-.alert-banner.dev{background:rgba(176,96,255,0.93);color:#fff;}
+  .right-col { display:flex; flex-direction:column; gap:0.8rem; }
 
-/* ── Right column ── */
-.right-col { display:flex;flex-direction:column;gap:0.7rem; }
+  .bl-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; }
+  .bl-cell { background:var(--bg); border:1px solid var(--border); border-radius:3px; padding:4px; text-align:center; }
+  .bl-em   { font-size:1.1rem; line-height:1; }
+  .bl-nm   { font-family:var(--mono); font-size:0.48rem; color:var(--muted); margin-top:1px; }
+  .bl-vl   { font-family:var(--mono); font-size:0.6rem; font-weight:700; margin-top:1px; }
 
-/* ── Panel base ── */
-.panel {
-  background:var(--panel);border:1px solid var(--border);border-radius:5px;padding:0.75rem;
-}
-.ptitle {
-  font-family:var(--mono);font-size:0.56rem;color:var(--muted);letter-spacing:0.18em;
-  text-transform:uppercase;margin-bottom:0.55rem;
-  display:flex;align-items:center;justify-content:space-between;gap:6px;
-}
-.ptitle::before{content:'';display:inline-block;width:5px;height:5px;border:1px solid currentColor;transform:rotate(45deg);flex-shrink:0;}
+  .dev-row   { display:flex; align-items:center; gap:8px; margin-top:4px; }
+  .dev-track { flex:1; height:7px; background:var(--border); border-radius:4px; overflow:hidden; }
+  .dev-fill  { height:100%; border-radius:4px; background:linear-gradient(90deg,var(--green),var(--yellow),var(--orange),var(--red)); transition:width 0.4s ease; }
+  .dev-score { font-family:var(--mono); font-size:0.85rem; font-weight:700; min-width:34px; text-align:right; }
+  .dev-lbl   { font-size:0.95rem; font-weight:700; text-transform:uppercase; margin-top:3px; }
+  .dev-dtl   { font-family:var(--mono); font-size:0.56rem; color:var(--muted); margin-top:2px; }
 
-/* ── Baseline panel ── */
-.baseline-grid {
-  display:grid;grid-template-columns:repeat(4,1fr);gap:4px;
-}
-.bl-cell {
-  background:var(--bg);border:1px solid var(--border);border-radius:3px;
-  padding:4px;text-align:center;
-}
-.bl-cell .bl-em { font-size:1.1rem;line-height:1; }
-.bl-cell .bl-name { font-family:var(--mono);font-size:0.48rem;color:var(--muted);margin-top:1px; }
-.bl-cell .bl-val { font-family:var(--mono);font-size:0.6rem;font-weight:700;margin-top:1px; }
-.bl-cell.active { border-color:var(--blue);background:rgba(0,212,255,0.04); }
+  .q-area { display:flex; gap:6px; margin-bottom:0.5rem; }
+  .q-area textarea {
+    flex:1; background:var(--bg); border:1px solid var(--border); border-radius:3px;
+    padding:0.4rem 0.6rem; font-family:var(--mono); font-size:0.62rem; color:var(--text);
+    outline:none; resize:none; height:52px; line-height:1.5;
+  }
+  .q-area textarea:focus { border-color:var(--red); }
+  .q-area textarea::placeholder { color:var(--muted); }
+  .q-btns { display:flex; flex-direction:column; gap:4px; }
+  .q-log  { display:flex; flex-direction:column; gap:5px; max-height:160px; overflow-y:auto; }
+  .q-item {
+    border-left:2px solid var(--border); padding:5px 8px;
+    background:rgba(255,255,255,0.02); border-radius:0 3px 3px 0;
+    animation:slideIn 0.3s ease;
+  }
+  @keyframes slideIn { from{opacity:0;transform:translateX(-6px)} to{opacity:1;transform:translateX(0)} }
+  .q-item.danger { border-left-color:var(--red);    background:rgba(255,43,43,0.05); }
+  .q-item.warn   { border-left-color:var(--orange); background:rgba(255,122,0,0.05); }
+  .q-item.ok     { border-left-color:var(--green);  background:rgba(0,255,136,0.04); }
+  .q-text    { font-family:var(--mono); font-size:0.6rem; color:var(--muted); margin-bottom:3px; }
+  .q-text strong { color:var(--text); }
+  .q-react   { font-family:var(--mono); font-size:0.62rem; }
+  .q-verdict { font-family:var(--mono); font-size:0.58rem; margin-top:3px; font-style:italic; }
 
-/* ── Deviation meter ── */
-.dev-row { display:flex;align-items:center;gap:8px;margin-top:4px; }
-.dev-track { flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden; }
-.dev-fill {
-  height:100%;border-radius:4px;
-  background:linear-gradient(90deg,var(--green),var(--yellow) 50%,var(--red));
-  transition:width 0.4s ease;
-}
-.dev-score { font-family:var(--mono);font-size:0.85rem;font-weight:700;min-width:36px;text-align:right; }
-.dev-label { font-size:0.95rem;font-weight:700;text-transform:uppercase;margin-top:3px; }
-.dev-detail { font-family:var(--mono);font-size:0.56rem;color:var(--muted);margin-top:2px; }
+  .ai-panel  { background:var(--panel); border:1px solid var(--border); border-radius:4px; display:flex; flex-direction:column; }
+  .ai-hdr    { padding:0.6rem 0.8rem; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .ai-title  { font-family:var(--mono); font-size:0.6rem; color:var(--blue); letter-spacing:0.2em; text-transform:uppercase; display:flex; align-items:center; gap:6px; }
+  .ai-title::before { content:''; display:inline-block; width:6px; height:6px; border:1px solid var(--blue); transform:rotate(45deg); }
+  .ai-model  { font-family:var(--mono); font-size:0.52rem; color:var(--muted); }
+  .ai-body   { flex:1; padding:0.8rem; overflow-y:auto; min-height:160px; max-height:260px; display:flex; flex-direction:column; gap:5px; }
+  .ai-st     { font-family:var(--mono); font-size:0.55rem; color:var(--blue); letter-spacing:0.15em; text-transform:uppercase; margin-bottom:2px; }
+  .ai-sb     { font-family:var(--mono); font-size:0.62rem; color:var(--text); line-height:1.7; }
+  .ai-vbox   { padding:5px 8px; border-radius:3px; font-family:var(--mono); font-size:0.68rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; margin-top:4px; }
+  .ai-vbox.sincero  { background:rgba(0,255,136,0.1); color:var(--green);  border-left:2px solid var(--green); }
+  .ai-vbox.suspeito { background:rgba(255,122,0,0.1); color:var(--orange); border-left:2px solid var(--orange); }
+  .ai-vbox.suprimido{ background:rgba(255,43,43,0.1); color:var(--red);    border-left:2px solid var(--red); }
+  .ai-vbox.neutro   { background:rgba(68,85,102,0.2); color:var(--muted);  border-left:2px solid var(--muted); }
+  .ai-footer { padding:5px 0.8rem; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  #ai-timer  { font-family:var(--mono); font-size:0.52rem; color:var(--muted); }
+  .ai-scan   { font-family:var(--mono); font-size:0.58rem; color:var(--blue); display:none; align-items:center; gap:6px; }
+  .ai-scan.on{ display:flex; }
+  .dots span { animation:dp 1.2s ease-in-out infinite; opacity:0; }
+  .dots span:nth-child(2){animation-delay:.2s;} .dots span:nth-child(3){animation-delay:.4s;}
+  @keyframes dp{0%,100%{opacity:0}50%{opacity:1}}
 
-/* ── Interrogation panel ── */
-.q-area {
-  display:flex;gap:6px;margin-bottom:0.5rem;
-}
-.q-area textarea {
-  flex:1;background:var(--bg);border:1px solid var(--border2);border-radius:3px;
-  padding:0.4rem 0.6rem;font-family:var(--mono);font-size:0.62rem;color:var(--text);
-  outline:none;resize:none;height:52px;line-height:1.5;
-}
-.q-area textarea:focus{border-color:var(--red);}
-.q-area textarea::placeholder{color:var(--muted);}
-.q-btns{display:flex;flex-direction:column;gap:4px;}
+  .micro-list { display:flex; flex-direction:column; gap:4px; max-height:80px; overflow:hidden; }
+  .micro-item {
+    display:flex; align-items:center; gap:6px; font-family:var(--mono); font-size:0.58rem;
+    padding:2px 6px; background:rgba(255,43,43,0.07);
+    border-left:2px solid var(--red); border-radius:0 2px 2px 0; animation:slideIn 0.3s ease;
+  }
+  .mit{color:var(--muted);flex-shrink:0;} .mie{font-weight:700;} .mid{color:var(--muted);flex:1;} .mis{color:var(--orange);flex-shrink:0;}
 
-.q-log { display:flex;flex-direction:column;gap:5px;max-height:160px;overflow-y:auto; }
-.q-item {
-  border-left:2px solid var(--border2);padding:5px 8px;
-  background:rgba(255,255,255,0.02);border-radius:0 3px 3px 0;
-  animation:qIn 0.3s ease;
-}
-@keyframes qIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
-.q-item.danger{border-left-color:var(--red);background:rgba(255,32,32,0.05);}
-.q-item.warn{border-left-color:var(--orange);background:rgba(255,122,0,0.05);}
-.q-item.ok{border-left-color:var(--green);background:rgba(0,255,136,0.04);}
-.q-text { font-family:var(--mono);font-size:0.6rem;color:var(--muted);margin-bottom:3px; }
-.q-text strong{color:var(--text);}
-.q-reaction { font-family:var(--mono);font-size:0.62rem; }
-.q-verdict { font-family:var(--mono);font-size:0.58rem;margin-top:3px;font-style:italic; }
-
-/* ── AI panel ── */
-.ai-body {
-  min-height:120px;max-height:220px;overflow-y:auto;
-  display:flex;flex-direction:column;gap:5px;
-}
-.ai-sec-title{font-family:var(--mono);font-size:0.55rem;color:var(--blue);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:2px;}
-.ai-sec-body{font-family:var(--mono);font-size:0.62rem;color:var(--text);line-height:1.7;}
-.ai-verdict-box{
-  padding:5px 8px;border-radius:3px;
-  font-family:var(--mono);font-size:0.68rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;
-  margin-top:4px;
-}
-.ai-verdict-box.sincero{background:rgba(0,255,136,0.1);color:var(--green);border-left:2px solid var(--green);}
-.ai-verdict-box.suspeito{background:rgba(255,122,0,0.1);color:var(--orange);border-left:2px solid var(--orange);}
-.ai-verdict-box.suprimido{background:rgba(255,32,32,0.1);color:var(--red);border-left:2px solid var(--red);}
-.ai-verdict-box.neutro{background:rgba(58,74,90,0.2);color:var(--muted);border-left:2px solid var(--muted);}
-.ai-scanning{display:none;font-family:var(--mono);font-size:0.58rem;color:var(--blue);align-items:center;gap:6px;}
-.ai-scanning.on{display:flex;}
-.dots span{animation:dp 1.2s ease-in-out infinite;opacity:0;}
-.dots span:nth-child(2){animation-delay:.2s;}.dots span:nth-child(3){animation-delay:.4s;}
-@keyframes dp{0%,100%{opacity:0}50%{opacity:1}}
-.ai-footer{padding:5px 0 0;border-top:1px solid var(--border);margin-top:5px;display:flex;align-items:center;justify-content:space-between;}
-#ai-timer{font-family:var(--mono);font-size:0.52rem;color:var(--muted);}
-
-/* ── Micro log ── */
-.micro-list{display:flex;flex-direction:column;gap:4px;max-height:80px;overflow:hidden;}
-.micro-item{
-  display:flex;align-items:center;gap:6px;
-  font-family:var(--mono);font-size:0.58rem;
-  padding:2px 6px;
-  background:rgba(255,32,32,0.06);border-left:2px solid var(--red);border-radius:0 2px 2px 0;
-  animation:qIn 0.3s ease;
-}
-.mt{color:var(--muted);flex-shrink:0;}
-.me{font-weight:700;}
-.md{color:var(--muted);flex:1;}
-.ms{color:var(--orange);flex-shrink:0;}
-
-/* ── Timeline ── */
-.tl-wrap{background:var(--panel);border:1px solid var(--border);border-radius:5px;padding:0.75rem;}
-canvas#tl{width:100%;height:60px;display:block;border-radius:2px;}
-.tl-leg{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:5px;}
-.tl-li{display:flex;align-items:center;gap:3px;font-family:var(--mono);font-size:0.5rem;color:var(--muted);text-transform:capitalize;}
-.tl-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
-
-/* ── Session report ── */
-.report-btn-row{display:flex;gap:6px;justify-content:flex-end;margin-top:4px;}
-
-/* ── Bars ── */
-.bars{display:flex;flex-direction:column;gap:4px;}
-.bar-row{display:flex;align-items:center;gap:5px;}
-.bl{font-family:var(--mono);font-size:0.54rem;color:var(--muted);width:58px;flex-shrink:0;text-transform:capitalize;}
-.bt{flex:1;height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
-.bf{height:100%;border-radius:2px;background:var(--muted);transition:width 0.3s ease;}
-.bn{font-family:var(--mono);font-size:0.54rem;color:var(--muted);width:24px;text-align:right;flex-shrink:0;}
-
-/* ── Emotion display ── */
-.emo-big{display:flex;align-items:center;gap:0.7rem;}
-.emo-ic{font-size:2.4rem;line-height:1;transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1);}
-.emo-ic.pop{transform:scale(1.28);}
-.emo-lbl{font-size:1.35rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;line-height:1;}
-.emo-cf{font-family:var(--mono);font-size:0.62rem;color:var(--muted);margin-top:2px;}
+  .tl-wrap { background:var(--panel); border:1px solid var(--border); border-radius:4px; padding:0.8rem; }
+  canvas#timeline { width:100%; height:65px; display:block; border-radius:2px; }
+  .tl-legend { display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:5px; }
+  .tl-leg-item { display:flex; align-items:center; gap:3px; font-family:var(--mono); font-size:0.53rem; color:var(--muted); text-transform:capitalize; }
+  .tl-leg-dot  { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+  .bottom-row { display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; }
+  @media(max-width:480px){ .bottom-row { grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
 
-<!-- Header -->
-<div class="hdr">
-  <div class="hdr-logo">
-    <span>LIE TO ME</span>
-    <small>// MODO INTERROGATÓRIO · BASELINE + GROQ AI</small>
+<div class="header">
+  <div>
+    <div class="logo-main">LIE TO ME</div>
+    <div class="logo-sub">// MODO INTERROGATÓRIO · BASELINE + GROQ AI</div>
   </div>
-  <div class="hdr-right">
-    <div class="rec"><div class="rec-dot"></div>AO VIVO</div>
-    <div id="sys">INICIALIZANDO...</div>
+  <div class="header-right">
+    <div class="rec-badge"><div class="rec-dot"></div>AO VIVO</div>
+    <div id="sys-status">INICIALIZANDO...</div>
   </div>
 </div>
 
-<!-- API Key -->
-<div class="api-bar" id="api-bar">
-  <label>⚙ GROQ KEY:</label>
-  <input type="password" id="key-in" placeholder="gsk_..." autocomplete="off"/>
-  <button class="btn" id="btn-key">SALVAR</button>
-  <small>Gratuito · console.groq.com · llama-4-scout-17b</small>
+<div class="api-setup" id="api-setup">
+  <label>⚙ GROQ API KEY:</label>
+  <input type="password" id="api-key-input" placeholder="gsk_..." autocomplete="off"/>
+  <button class="btn" id="btn-save-key">SALVAR</button>
+  <small>Gratuito em console.groq.com · llama-4-scout-17b · Análise a cada 4s</small>
 </div>
 
-<!-- Phase banner -->
 <div class="phase-banner idle" id="phase-banner">
   <span id="phase-text">AGUARDANDO INÍCIO</span>
-  <div class="phase-progress">
+  <div class="phase-prog">
     <div class="phase-bar"><div class="phase-fill" id="phase-fill" style="width:0%"></div></div>
-    <span id="phase-label" style="font-size:0.55rem"></span>
+    <span id="phase-lbl" style="font-family:var(--mono);font-size:0.55rem"></span>
   </div>
 </div>
 
-<!-- Controls -->
-<div style="width:100%;max-width:820px;display:flex;gap:6px;flex-wrap:wrap;">
-  <button class="btn blue" id="btn-baseline">📡 CALIBRAR BASELINE (10s)</button>
-  <button class="btn green" id="btn-start" disabled>▶ INICIAR INTERROGATÓRIO</button>
-  <button class="btn ghost" id="btn-stop" disabled>■ PARAR</button>
+<div class="controls">
+  <button class="btn blue"   id="btn-baseline">📡 CALIBRAR BASELINE (10s)</button>
+  <button class="btn green"  id="btn-start" disabled>▶ INICIAR INTERROGATÓRIO</button>
+  <button class="btn ghost"  id="btn-stop"  disabled>■ PARAR</button>
   <button class="btn orange" id="btn-report" disabled>📋 RELATÓRIO PDF</button>
 </div>
 
-<!-- Main grid -->
-<div class="grid">
+<div class="main">
+  <div class="top-row">
 
-  <!-- Camera -->
-  <div>
-    <div class="cam-wrap">
-      <video id="video" autoplay muted playsinline></video>
-      <canvas id="ov"></canvas>
-      <!-- Camera start overlay for mobile -->
-      <div id="cam-start-overlay" style="
-        position:absolute;inset:0;z-index:10;
-        background:rgba(4,4,7,0.92);
-        display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
-      ">
-        <div style="font-size:2.5rem">📷</div>
-        <div style="font-family:var(--mono);font-size:0.7rem;color:var(--blue);letter-spacing:0.15em;text-align:center">CÂMERA NECESSÁRIA</div>
-        <button class="btn blue" id="btn-cam" style="font-size:0.75rem;padding:0.5rem 1.5rem">ATIVAR CÂMERA</button>
-        <div style="font-family:var(--mono);font-size:0.55rem;color:var(--muted);text-align:center;padding:0 1rem">Toque para permitir acesso à câmera</div>
+    <div>
+      <div class="camera-wrap">
+        <video id="video" autoplay muted playsinline></video>
+        <canvas id="overlay"></canvas>
+        <div class="alert-banner" id="alert-banner">
+          <span id="al-icon">⚡</span><span id="al-text">ALERTA</span>
+        </div>
       </div>
-      <div class="cam-overlay-info">
-        <div class="cam-tag baseline-tag" id="baseline-tag" style="display:none">● BASELINE ATIVO</div>
-        <div class="cam-tag deviation-tag" id="dev-tag" style="display:none">⚠ DESVIO DETECTADO</div>
+      <div class="panel" style="margin-top:0.8rem">
+        <div class="ptitle">Emoção Dominante</div>
+        <div class="emo-big">
+          <div class="emo-ic" id="emo-ic">—</div>
+          <div><div class="emo-lbl" id="emo-lbl">Aguardando</div><div class="emo-cf" id="emo-cf">confiança: —</div></div>
+        </div>
       </div>
-      <div class="alert-banner" id="alert-banner">
-        <span id="al-icon">⚡</span><span id="al-text">ALERTA</span>
+      <div class="panel" style="margin-top:0.8rem">
+        <div class="ptitle">Distribuição</div>
+        <div class="bars" id="bars"></div>
       </div>
     </div>
 
-    <!-- Emoção dominante -->
-    <div class="panel" style="margin-top:0.7rem">
-      <div class="ptitle">Emoção Dominante</div>
-      <div class="emo-big">
-        <div class="emo-ic" id="emo-ic">—</div>
-        <div>
-          <div class="emo-lbl" id="emo-lbl">Aguardando</div>
-          <div class="emo-cf" id="emo-cf">confiança: —</div>
+    <div class="right-col">
+      <div class="panel">
+        <div class="ptitle">Baseline Emocional <span id="bl-status" style="color:var(--muted)">NÃO CALIBRADO</span></div>
+        <div class="bl-grid" id="bl-grid">
+          <div style="font-family:var(--mono);font-size:0.58rem;color:var(--muted);grid-column:1/-1;padding:4px 0">Fique neutro e clique em Calibrar...</div>
+        </div>
+        <div style="margin-top:0.6rem">
+          <div class="ptitle" style="margin-bottom:0.3rem">Desvio do Baseline</div>
+          <div class="dev-row">
+            <div class="dev-track"><div class="dev-fill" id="dev-fill" style="width:0%"></div></div>
+            <div class="dev-score" id="dev-score" style="color:var(--green)">0%</div>
+          </div>
+          <div class="dev-lbl" id="dev-lbl" style="color:var(--green)">Normal</div>
+          <div class="dev-dtl" id="dev-dtl">Calibre o baseline primeiro</div>
         </div>
       </div>
-    </div>
 
-    <!-- Bars -->
-    <div class="panel" style="margin-top:0.7rem">
-      <div class="ptitle">Distribuição</div>
-      <div class="bars" id="bars"></div>
-    </div>
-  </div>
-
-  <!-- Right column -->
-  <div class="right-col">
-
-    <!-- Baseline -->
-    <div class="panel">
-      <div class="ptitle">Baseline Emocional <span id="bl-status" style="color:var(--muted)">NÃO CALIBRADO</span></div>
-      <div class="baseline-grid" id="bl-grid">
-        <!-- filled by JS -->
-      </div>
-      <!-- Deviation -->
-      <div style="margin-top:0.6rem">
-        <div class="ptitle" style="margin-bottom:0.3rem">Desvio do Baseline</div>
-        <div class="dev-row">
-          <div class="dev-track"><div class="dev-fill" id="dev-fill" style="width:0%"></div></div>
-          <div class="dev-score" id="dev-score" style="color:var(--green)">0%</div>
+      <div class="panel">
+        <div class="ptitle">Modo Interrogatório</div>
+        <div class="q-area">
+          <textarea id="q-input" placeholder="Digite a pergunta..."></textarea>
+          <div class="q-btns">
+            <button class="btn" id="btn-ask" disabled style="font-size:0.55rem;padding:0.3rem 0.6rem">⚡ FAZER</button>
+            <button class="btn ghost" id="btn-clr" style="font-size:0.55rem;padding:0.3rem 0.6rem">CLR</button>
+          </div>
         </div>
-        <div class="dev-label" id="dev-label" style="color:var(--green)">Normal</div>
-        <div class="dev-detail" id="dev-detail">Calibre o baseline primeiro</div>
-      </div>
-    </div>
-
-    <!-- Interrogation -->
-    <div class="panel">
-      <div class="ptitle">Modo Interrogatório</div>
-      <div class="q-area">
-        <textarea id="q-input" placeholder="Digite a pergunta que vai fazer..."></textarea>
-        <div class="q-btns">
-          <button class="btn" id="btn-ask" disabled style="font-size:0.55rem;padding:0.3rem 0.6rem">⚡ FAZER</button>
-          <button class="btn ghost" id="btn-clr" style="font-size:0.55rem;padding:0.3rem 0.6rem">CLR</button>
+        <div class="q-log" id="q-log">
+          <div style="font-family:var(--mono);font-size:0.58rem;color:var(--muted)">Inicie o interrogatório e faça perguntas...</div>
         </div>
       </div>
-      <div class="q-log" id="q-log">
-        <div style="font-family:var(--mono);font-size:0.58rem;color:var(--muted);padding:4px 0">
-          Inicie o interrogatório e faça perguntas...
-        </div>
-      </div>
-    </div>
 
-    <!-- AI analysis -->
-    <div class="panel">
-      <div class="ptitle">Análise Profunda IA <span class="ai-scanning" id="ai-scan">ANALISANDO <div class="dots"><span>.</span><span>.</span><span>.</span></div></span></div>
-      <div class="ai-body" id="ai-body">
-        <div style="font-family:var(--mono);font-size:0.6rem;color:var(--muted);line-height:1.8">
-          ► Configure Groq API Key<br>
-          ► Calibre o baseline (10s rosto neutro)<br>
-          ► Inicie o interrogatório<br>
-          ► Digite e dispare perguntas<br>
-          ► A IA analisa a reação em tempo real
+      <div class="ai-panel">
+        <div class="ai-hdr">
+          <div class="ai-title">Análise Profunda IA</div>
+          <div class="ai-model">llama-4-scout · groq</div>
         </div>
-      </div>
-      <div class="ai-footer">
-        <div id="ai-timer">próxima análise: —</div>
-        <div style="font-family:var(--mono);font-size:0.5rem;color:var(--muted)">llama-4-scout · groq</div>
+        <div class="ai-body" id="ai-body">
+          <div style="font-family:var(--mono);font-size:0.6rem;color:var(--muted);line-height:1.9">
+            ► Configure Groq API Key acima<br>
+            ► Calibre o baseline (10s neutro)<br>
+            ► Inicie o interrogatório<br>
+            ► Digite perguntas e dispare<br>
+            ► IA analisa a reação em tempo real
+          </div>
+        </div>
+        <div class="ai-footer">
+          <div id="ai-timer">próxima análise: —</div>
+          <div class="ai-scan" id="ai-scan">ANALISANDO <div class="dots"><span>.</span><span>.</span><span>.</span></div></div>
+        </div>
       </div>
     </div>
 
   </div>
-</div>
 
-<!-- Full width: micro + timeline -->
-<div style="width:100%;max-width:820px;display:grid;grid-template-columns:1fr 1fr;gap:0.7rem;">
-  <div class="panel">
-    <div class="ptitle">Microexpressões</div>
-    <div class="micro-list" id="micro-list">
-      <div style="font-family:var(--mono);font-size:0.58rem;color:var(--muted)">Aguardando...</div>
+  <div class="bottom-row">
+    <div class="panel">
+      <div class="ptitle">Microexpressões</div>
+      <div class="micro-list" id="micro-list">
+        <div style="font-family:var(--mono);font-size:0.58rem;color:var(--muted)">Aguardando...</div>
+      </div>
     </div>
-  </div>
-  <div class="tl-wrap">
-    <div class="ptitle">Linha do Tempo</div>
-    <canvas id="tl"></canvas>
-    <div class="tl-leg" id="tl-leg"></div>
+    <div class="tl-wrap">
+      <div class="ptitle">Linha do Tempo</div>
+      <canvas id="timeline"></canvas>
+      <div class="tl-legend" id="tl-legend"></div>
+    </div>
   </div>
 </div>
 
 <script>
-// ── Script loader ──────────────────────────────────────────
-function loadScript(src){
-  return new Promise((res,rej)=>{
-    const s=document.createElement('script');
-    s.src=src;s.onload=res;s.onerror=()=>rej(new Error('Falha: '+src));
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src; s.onload = resolve;
+    s.onerror = () => reject(new Error('Falha: ' + src));
     document.head.appendChild(s);
   });
 }
 
-// ── Config ─────────────────────────────────────────────────
-const MODEL_URL      = 'https://justadudewhohacks.github.io/face-api.js/models';
-const INTERVAL_MS    = 150;
-const MICRO_MAX      = 600;
-const SUPPRESS_WIN   = 20;
-const TL_MAX         = 200;
-const BASELINE_SECS  = 10;
-const GROQ_INTERVAL  = 4000;
+const MODEL_URL     = 'https://justadudewhohacks.github.io/face-api.js/models';
+const INTERVAL_MS   = 150;
+const MICRO_MAX     = 600;
+const TL_MAX        = 200;
+const BASELINE_SECS = 10;
+const GROQ_INTERVAL = 4000;
 
-// ── Maps ───────────────────────────────────────────────────
 const EMOJI  = {happy:'😄',sad:'😢',angry:'😠',fearful:'😨',disgusted:'🤢',surprised:'😲',neutral:'😐'};
 const PT     = {happy:'Feliz',sad:'Triste',angry:'Raiva',fearful:'Medo',disgusted:'Nojo',surprised:'Surpresa',neutral:'Neutro'};
-const COLORS = {happy:'#ffd600',sad:'#00d4ff',angry:'#ff2020',fearful:'#b060ff',disgusted:'#4ade80',surprised:'#ff7a00',neutral:'#3a4a5a'};
+const COLORS = {happy:'#ffd600',sad:'#00cfff',angry:'#ff2b2b',fearful:'#a855f7',disgusted:'#4ade80',surprised:'#ff7a00',neutral:'#445566'};
 
-// ── State ──────────────────────────────────────────────────
-let groqKey        = localStorage.getItem('groq_key')||'';
-let phase          = 'idle'; // idle | baseline | ready | interrogation
-let baselineData   = null;   // avg expressions during baseline
-let baselineFrames = [];
-let baselineTimer  = null;
-let baselineElapsed= 0;
-let suppressHist   = [];
-let prevExp        = null;
-let microCand      = null;
-let alertTO        = null;
-let frameSkip      = false;
-let groqLoop       = null;
-let groqCountdown  = GROQ_INTERVAL;
-let tlData         = [];
-let sessionLog     = [];     // {time, question, emotion, deviation, verdict}
-let currentQ       = '';
-let lastGroqResult = null;
+let groqKey = localStorage.getItem('groq_key') || '';
+let phase = 'idle', baselineData = null, baselineFrames = [], baselineTimer = null, baselineElapsed = 0;
+let prevExp = null, microCand = null, alertTO = null, frameSkip = false;
+let groqLoopTimer = null, groqLoopRunning = false, groqCountdown = GROQ_INTERVAL;
+let tlData = [], sessionLog = [];
 
-// ── DOM ────────────────────────────────────────────────────
-const video      = document.getElementById('video');
-const ovEl       = document.getElementById('ov');
-const alertEl    = document.getElementById('alert-banner');
-const alIcon     = document.getElementById('al-icon');
-const alText     = document.getElementById('al-text');
-const sysEl      = document.getElementById('sys');
-const phaseBanner= document.getElementById('phase-banner');
-const phaseText  = document.getElementById('phase-text');
-const phaseFill  = document.getElementById('phase-fill');
-const phaseLabel = document.getElementById('phase-label');
-const blGrid     = document.getElementById('bl-grid');
-const blStatus   = document.getElementById('bl-status');
-const devFill    = document.getElementById('dev-fill');
-const devScore   = document.getElementById('dev-score');
-const devLabel   = document.getElementById('dev-label');
-const devDetail  = document.getElementById('dev-detail');
-const devTag     = document.getElementById('dev-tag');
-const blTag      = document.getElementById('baseline-tag');
-const emoIc      = document.getElementById('emo-ic');
-const emoLbl     = document.getElementById('emo-lbl');
-const emoCf      = document.getElementById('emo-cf');
-const barsEl     = document.getElementById('bars');
-const qInput     = document.getElementById('q-input');
-const qLog       = document.getElementById('q-log');
-const microList  = document.getElementById('micro-list');
-const tlCanvas   = document.getElementById('tl');
-const tlLeg      = document.getElementById('tl-leg');
-const tlCtx      = tlCanvas.getContext('2d');
-const aiBody     = document.getElementById('ai-body');
-const aiScan     = document.getElementById('ai-scan');
-const aiTimer    = document.getElementById('ai-timer');
-const btnBaseline= document.getElementById('btn-baseline');
-const btnStart   = document.getElementById('btn-start');
-const btnStop    = document.getElementById('btn-stop');
-const btnReport  = document.getElementById('btn-report');
-const btnAsk     = document.getElementById('btn-ask');
-const btnClr     = document.getElementById('btn-clr');
-const keyIn      = document.getElementById('key-in');
-const btnKey     = document.getElementById('btn-key');
-const apiBar     = document.getElementById('api-bar');
+const video       = document.getElementById('video');
+const overlayEl   = document.getElementById('overlay');
+const alertEl     = document.getElementById('alert-banner');
+const alIcon      = document.getElementById('al-icon');
+const alText      = document.getElementById('al-text');
+const sysStatus   = document.getElementById('sys-status');
+const phaseBanner = document.getElementById('phase-banner');
+const phaseText   = document.getElementById('phase-text');
+const phaseFill   = document.getElementById('phase-fill');
+const phaseLbl    = document.getElementById('phase-lbl');
+const blGrid      = document.getElementById('bl-grid');
+const blStatus    = document.getElementById('bl-status');
+const devFill     = document.getElementById('dev-fill');
+const devScore    = document.getElementById('dev-score');
+const devLbl      = document.getElementById('dev-lbl');
+const devDtl      = document.getElementById('dev-dtl');
+const emoIc       = document.getElementById('emo-ic');
+const emoLbl      = document.getElementById('emo-lbl');
+const emoCf       = document.getElementById('emo-cf');
+const barsEl      = document.getElementById('bars');
+const qInput      = document.getElementById('q-input');
+const qLog        = document.getElementById('q-log');
+const microList   = document.getElementById('micro-list');
+const tlCanvas    = document.getElementById('timeline');
+const tlLegend    = document.getElementById('tl-legend');
+const tlCtx       = tlCanvas.getContext('2d');
+const aiBody      = document.getElementById('ai-body');
+const aiScan      = document.getElementById('ai-scan');
+const aiTimer     = document.getElementById('ai-timer');
+const btnBaseline = document.getElementById('btn-baseline');
+const btnStart    = document.getElementById('btn-start');
+const btnStop     = document.getElementById('btn-stop');
+const btnReport   = document.getElementById('btn-report');
+const btnAsk      = document.getElementById('btn-ask');
+const btnClr      = document.getElementById('btn-clr');
+const apiSetup    = document.getElementById('api-setup');
+const apiKeyInput = document.getElementById('api-key-input');
+const btnSaveKey  = document.getElementById('btn-save-key');
 
-// ── API Key ─────────────────────────────────────────────────
-if(groqKey){keyIn.value=groqKey;apiBar.style.borderColor='var(--green)';}
-btnKey.addEventListener('click',()=>{
-  const k=keyIn.value.trim();
-  if(k.length<10){apiBar.style.borderColor='var(--red)';return;}
-  groqKey=k;
-  try{localStorage.setItem('groq_key',k);}catch(e){}
-  apiBar.style.borderColor='var(--green)';
-  btnKey.textContent='✓ SALVO';
-  btnKey.style.background='var(--green)';
-  btnKey.style.color='#000';
-  btnKey.disabled=false;
+// API Key — mesmo padrão da versão que funcionou
+if (groqKey) { apiKeyInput.value = groqKey; apiSetup.style.borderColor = 'var(--green)'; }
+btnSaveKey.addEventListener('click', () => {
+  const k = apiKeyInput.value.trim();
+  if (!k.startsWith('gsk_')) { apiSetup.style.borderColor = 'var(--red)'; return; }
+  groqKey = k;
+  localStorage.setItem('groq_key', k);
+  apiSetup.style.borderColor = 'var(--green)';
+  btnSaveKey.textContent = '✓ SALVO';
+  btnSaveKey.disabled = true;
 });
 
-// ── Helpers ────────────────────────────────────────────────
-const top = exp => Object.keys(exp).reduce((a,b)=>exp[a]>exp[b]?a:b);
-const sortExp = exp => Object.entries(exp).sort((a,b)=>b[1]-a[1]);
-const nowStr = ()=>new Date().toLocaleTimeString('pt-br',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+const topEmo  = exp => Object.keys(exp).reduce((a,b) => exp[a]>exp[b]?a:b);
+const sortExp = exp => Object.entries(exp).sort((a,b) => b[1]-a[1]);
+const nowStr  = () => new Date().toLocaleTimeString('pt-br',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 
-function showAlert(type,text,icon,dur=2500){
-  alertEl.className='alert-banner show '+type;
-  alText.textContent=text;alIcon.textContent=icon;
-  clearTimeout(alertTO);alertTO=setTimeout(()=>alertEl.classList.remove('show'),dur);
+function showAlert(type, text, icon, dur=2500) {
+  alertEl.className = 'alert-banner show '+type;
+  alText.textContent = text; alIcon.textContent = icon;
+  clearTimeout(alertTO); alertTO = setTimeout(()=>alertEl.classList.remove('show'), dur);
 }
 
-function setPhaseBanner(p,txt,pct=0,lbl=''){
-  phaseBanner.className='phase-banner '+p;
-  phaseText.textContent=txt;
-  phaseFill.style.width=pct+'%';
-  phaseLabel.textContent=lbl;
+function setPhase(p, txt, pct=0, lbl='') {
+  phaseBanner.className = 'phase-banner '+p;
+  phaseText.textContent = txt; phaseFill.style.width = pct+'%'; phaseLbl.textContent = lbl;
 }
 
-function captureFrame(){
-  const c=document.createElement('canvas');
-  c.width=video.videoWidth||320;c.height=video.videoHeight||240;
-  const ctx=c.getContext('2d');
-  ctx.save();ctx.scale(-1,1);ctx.drawImage(video,-c.width,0,c.width,c.height);ctx.restore();
+function captureFrame() {
+  const c = document.createElement('canvas');
+  c.width = video.videoWidth||320; c.height = video.videoHeight||240;
+  const ctx = c.getContext('2d');
+  ctx.save(); ctx.scale(-1,1); ctx.drawImage(video,-c.width,0,c.width,c.height); ctx.restore();
   return c.toDataURL('image/jpeg',0.7).split(',')[1];
 }
 
-// ── Baseline ───────────────────────────────────────────────
-function startBaseline(){
-  if(phase==='baseline')return;
-  phase='baseline';
-  baselineFrames=[];baselineElapsed=0;
-  blTag.style.display='block';
-  setPhaseBanner('baseline','● CALIBRANDO BASELINE...',0,'0s');
-  btnBaseline.disabled=true;btnStart.disabled=true;
-  baselineTimer=setInterval(()=>{
+// Baseline
+btnBaseline.addEventListener('click', () => {
+  if (phase==='baseline') return;
+  phase='baseline'; baselineFrames=[]; baselineElapsed=0;
+  setPhase('baseline','● CALIBRANDO — FIQUE COM EXPRESSÃO NEUTRA',0,'0s');
+  btnBaseline.disabled=true; btnStart.disabled=true;
+  baselineTimer = setInterval(()=>{
     baselineElapsed++;
-    const pct=Math.round((baselineElapsed/BASELINE_SECS)*100);
-    setPhaseBanner('baseline',`● CALIBRANDO BASELINE... FIQUE NEUTRO`,pct,`${baselineElapsed}/${BASELINE_SECS}s`);
-    if(baselineElapsed>=BASELINE_SECS) finishBaseline();
-  },1000);
-}
+    setPhase('baseline','● CALIBRANDO BASELINE... FIQUE NEUTRO',
+      Math.round((baselineElapsed/BASELINE_SECS)*100), `${baselineElapsed}/${BASELINE_SECS}s`);
+    if (baselineElapsed>=BASELINE_SECS) finishBaseline();
+  }, 1000);
+});
 
-function finishBaseline(){
+function finishBaseline() {
   clearInterval(baselineTimer);
-  if(baselineFrames.length===0){
-    setPhaseBanner('idle','NENHUM ROSTO DETECTADO DURANTE CALIBRAÇÃO');
-    phase='idle';btnBaseline.disabled=false;blTag.style.display='none';return;
+  if (!baselineFrames.length) {
+    setPhase('idle','⚠ NENHUM ROSTO DETECTADO — TENTE NOVAMENTE');
+    phase='idle'; btnBaseline.disabled=false; return;
   }
-  // Average baseline
-  const keys=Object.keys(EMOJI);
   baselineData={};
-  keys.forEach(k=>{
-    baselineData[k]=baselineFrames.reduce((s,f)=>s+(f[k]||0),0)/baselineFrames.length;
+  Object.keys(EMOJI).forEach(k => {
+    baselineData[k] = baselineFrames.reduce((s,f)=>s+(f[k]||0),0)/baselineFrames.length;
   });
   phase='ready';
-  blTag.style.display='none';
-  renderBaselineGrid();
-  blStatus.textContent='CALIBRADO ✓';blStatus.style.color='var(--green)';
-  setPhaseBanner('ready','✓ BASELINE CALIBRADO — PRONTO PARA INTERROGATÓRIO',100,'PRONTO');
-  btnStart.disabled=false;btnBaseline.disabled=false;
-  sysEl.textContent='BASELINE OK';
-}
-
-function renderBaselineGrid(){
-  if(!baselineData)return;
-  blGrid.innerHTML=Object.entries(baselineData).map(([k,v])=>`
+  blGrid.innerHTML = Object.entries(baselineData).map(([k,v])=>`
     <div class="bl-cell">
       <div class="bl-em">${EMOJI[k]}</div>
-      <div class="bl-name">${PT[k]}</div>
-      <div class="bl-val" style="color:${COLORS[k]}">${(v*100).toFixed(0)}%</div>
+      <div class="bl-nm">${PT[k]}</div>
+      <div class="bl-vl" style="color:${COLORS[k]}">${(v*100).toFixed(0)}%</div>
     </div>`).join('');
+  blStatus.textContent='CALIBRADO ✓'; blStatus.style.color='var(--green)';
+  setPhase('ready','✓ BASELINE CALIBRADO — PRONTO PARA INTERROGATÓRIO',100,'PRONTO');
+  btnStart.disabled=false; btnBaseline.disabled=false;
+  sysStatus.textContent='BASELINE OK';
 }
 
-// ── Deviation from baseline ────────────────────────────────
-function calcDeviation(exp){
-  if(!baselineData) return 0;
-  const keys=Object.keys(EMOJI);
-  let totalDiff=0;
-  keys.forEach(k=>{
-    totalDiff+=Math.abs((exp[k]||0)-(baselineData[k]||0));
-  });
-  return Math.min(100,Math.round((totalDiff/keys.length)*300));
+function calcDeviation(exp) {
+  if (!baselineData) return 0;
+  let d=0;
+  Object.keys(EMOJI).forEach(k=>{ d+=Math.abs((exp[k]||0)-(baselineData[k]||0)); });
+  return Math.min(100, Math.round((d/Object.keys(EMOJI).length)*300));
 }
 
-function updateDeviation(exp){
+function updateDeviation(exp) {
   const dev=calcDeviation(exp);
-  devFill.style.width=dev+'%';
-  devScore.textContent=dev+'%';
-  devScore.style.color=dev>60?'var(--red)':dev>35?'var(--orange)':dev>15?'var(--yellow)':'var(--green)';
-
-  let lbl,detail,tagShow=false;
-  if(dev>70){lbl='DESVIO CRÍTICO';detail='Reação emocional muito fora do padrão';tagShow=true;}
-  else if(dev>50){lbl='Desvio Alto';detail='Emoção significativamente diferente do baseline';tagShow=true;}
-  else if(dev>30){lbl='Desvio Moderado';detail='Leve variação em relação ao estado neutro';}
-  else if(dev>15){lbl='Desvio Leve';detail='Pequena variação — pode ser atenção natural';}
-  else{lbl='Normal';detail='Expressão dentro do padrão de baseline';}
-
-  devLabel.textContent=lbl;
-  devLabel.style.color=dev>60?'var(--red)':dev>35?'var(--orange)':dev>15?'var(--yellow)':'var(--green)';
-  devDetail.textContent=detail;
-  devTag.style.display=tagShow?'block':'none';
-  if(dev>70) showAlert('dev','⚠ DESVIO CRÍTICO DO BASELINE','⚠');
+  devFill.style.width=dev+'%'; devScore.textContent=dev+'%';
+  const col=dev>60?'var(--red)':dev>35?'var(--orange)':dev>15?'var(--yellow)':'var(--green)';
+  devScore.style.color=col;
+  const [lbl,dtl]=dev>70?['DESVIO CRÍTICO','Reação muito fora do padrão']:
+    dev>50?['Desvio Alto','Emoção diferente do baseline']:
+    dev>30?['Desvio Moderado','Leve variação do estado neutro']:
+    dev>15?['Desvio Leve','Pequena variação natural']:
+    ['Normal','Expressão dentro do baseline'];
+  devLbl.textContent=lbl; devLbl.style.color=col; devDtl.textContent=dtl;
+  if (dev>70) showAlert('deviation','⚠ DESVIO CRÍTICO DO BASELINE','⚠');
   return dev;
 }
 
-// ── Interrogation ──────────────────────────────────────────
-btnStart.addEventListener('click',()=>{
-  if(phase!=='ready')return;
-  phase='interrogation';
-  qLog.innerHTML='';
-  setPhaseBanner('active','🔴 INTERROGATÓRIO ATIVO','100','AO VIVO');
-  btnStart.disabled=true;btnStop.disabled=false;btnAsk.disabled=false;btnReport.disabled=false;
-  if(groqKey) startGroqLoop();
+// Interrogation
+btnStart.addEventListener('click', ()=>{
+  if (phase!=='ready') return;
+  phase='interrogation'; qLog.innerHTML='';
+  setPhase('active','🔴 INTERROGATÓRIO ATIVO',100,'AO VIVO');
+  btnStart.disabled=true; btnStop.disabled=false;
+  btnAsk.disabled=false; btnReport.disabled=false;
+  if (groqKey) startGroqLoop();
   showAlert('micro','INTERROGATÓRIO INICIADO','🔴',2000);
 });
 
-btnStop.addEventListener('click',()=>{
-  phase='ready';
-  stopGroqLoop();
-  setPhaseBanner('ready','■ INTERROGATÓRIO ENCERRADO','100','ENCERRADO');
-  btnStart.disabled=false;btnStop.disabled=true;btnAsk.disabled=true;
+btnStop.addEventListener('click', ()=>{
+  phase='ready'; stopGroqLoop();
+  setPhase('ready','■ INTERROGATÓRIO ENCERRADO',100,'ENCERRADO');
+  btnStart.disabled=false; btnStop.disabled=true; btnAsk.disabled=true;
 });
 
-btnClr.addEventListener('click',()=>{ qInput.value=''; currentQ=''; });
+btnClr.addEventListener('click', ()=>{ qInput.value=''; });
+btnAsk.addEventListener('click', fireQuestion);
+qInput.addEventListener('keydown', e=>{ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();fireQuestion();} });
 
-btnAsk.addEventListener('click',fireQuestion);
-qInput.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();fireQuestion();} });
-
-function fireQuestion(){
+function fireQuestion() {
   const q=qInput.value.trim();
-  if(!q||phase!=='interrogation')return;
-  currentQ=q;
+  if (!q||phase!=='interrogation') return;
   qInput.value='';
-
-  // snapshot emotion at question moment
-  const snapExp=prevExp||{neutral:1,happy:0,sad:0,angry:0,fearful:0,disgusted:0,surprised:0};
-  const dominant=top(snapExp);
-  const dev=calcDeviation(snapExp);
-
-  const item=document.createElement('div');
+  const snap=prevExp||{neutral:1,happy:0,sad:0,angry:0,fearful:0,disgusted:0,surprised:0};
+  const dom=topEmo(snap), dev=calcDeviation(snap);
   const cls=dev>60?'danger':dev>30?'warn':'ok';
+  const vid='qv'+Date.now();
+  const item=document.createElement('div');
   item.className='q-item '+cls;
   item.innerHTML=`
     <div class="q-text"><strong>P: ${q}</strong></div>
-    <div class="q-reaction" style="color:${COLORS[dominant]}">
-      ${EMOJI[dominant]} ${PT[dominant]} — desvio: ${dev}%
-    </div>
-    <div class="q-verdict" id="qv-${Date.now()}" style="color:var(--muted)">aguardando IA...</div>
-  `;
-  if(qLog.children[0]?.style?.color==='var(--muted)') qLog.innerHTML='';
+    <div class="q-react" style="color:${COLORS[dom]}">${EMOJI[dom]} ${PT[dom]} — desvio: ${dev}%</div>
+    <div class="q-verdict" id="${vid}" style="color:var(--muted)">aguardando IA...</div>`;
+  if (qLog.children.length && !qLog.children[0].className) qLog.innerHTML='';
   qLog.prepend(item);
-
-  // Store
-  const entry={time:nowStr(),question:q,emotion:PT[dominant],emoji:EMOJI[dominant],deviation:dev,groqVerdict:null};
+  const entry={time:nowStr(),question:q,emotion:PT[dom],emoji:EMOJI[dom],deviation:dev,groqVerdict:null};
   sessionLog.push(entry);
-
-  // Force immediate Groq call for this question
-  if(groqKey){
-    groqCountdown=0;
-    const verdictEl=item.querySelector('[id^="qv-"]');
-    callGroqWithQuestion(captureFrame(),q,snapExp).then(r=>{
-      if(r&&verdictEl) verdictEl.textContent=r;
-      if(entry) entry.groqVerdict=r;
+  if (groqKey) {
+    callGroqQuestion(captureFrame(),q,snap).then(r=>{
+      const el=document.getElementById(vid);
+      if(el) el.textContent=r||'—';
+      entry.groqVerdict=r;
     }).catch(()=>{});
   }
 }
 
-// ── Groq ───────────────────────────────────────────────────
-async function callGroqWithQuestion(b64,question,exp){
-  const dominant=top(exp);
-  const dev=calcDeviation(exp);
-  const prompt=`Você é o Dr. Cal Lightman, especialista em microexpressões baseado em Paul Ekman.
+async function groqFetch(messages, max_tokens=600) {
+  const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':`Bearer ${groqKey}`},
+    body:JSON.stringify({model:'meta-llama/llama-4-scout-17b-16e-instruct',max_tokens,messages})
+  });
+  if (!res.ok){const e=await res.json();throw new Error(e.error?.message||'Erro Groq');}
+  const data=await res.json();
+  return data.choices[0].message.content;
+}
 
-CONTEXTO DA ANÁLISE:
-- Pergunta feita: "${question}"
-- Emoção detectada no momento: ${PT[dominant]||dominant} (${(exp[dominant]*100).toFixed(0)}% confiança)
-- Desvio do baseline: ${dev}%
-- Distribuição: ${Object.entries(exp).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k,v])=>`${PT[k]||k}:${(v*100).toFixed(0)}%`).join(', ')}
-
-Analise a imagem do rosto e responda considerando a pergunta feita. Forneça:
-1. REAÇÃO: O que o rosto revela em resposta à pergunta?
-2. MUSCULOS: Quais músculos estão tensos/ativados?
-3. OLHOS: O que os olhos e sobrancelhas indicam?
-4. OCULTO: Existe emoção sendo suprimida?
-5. VEREDICTO: SINCERO, SUSPEITO ou SUPRIMIDO — com justificativa de 1 linha
-
-Responda APENAS em JSON sem markdown:
+async function callGroqQuestion(b64,question,exp) {
+  const dom=topEmo(exp), dev=calcDeviation(exp);
+  const prompt=`Você é o Dr. Cal Lightman, especialista em microexpressões (Paul Ekman).
+CONTEXTO: Pergunta="${question}" | Emoção=${PT[dom]} ${(exp[dom]*100).toFixed(0)}% | Desvio=${dev}%
+Analise o rosto e responda APENAS em JSON sem markdown:
 {"reacao":"...","musculos":"...","olhos":"...","oculto":"...","veredicto":"SINCERO|SUSPEITO|SUPRIMIDO","justificativa":"..."}`;
-
-  const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':`Bearer ${groqKey}`},
-    body:JSON.stringify({
-      model:'meta-llama/llama-4-scout-17b-16e-instruct',
-      max_tokens:600,
-      messages:[{role:'user',content:[
-        {type:'image_url',image_url:{url:`data:image/jpeg;base64,${b64}`}},
-        {type:'text',text:prompt}
-      ]}]
-    })
-  });
-  if(!res.ok){const e=await res.json();throw new Error(e.error?.message||'Erro Groq');}
-  const data=await res.json();
-  const raw=data.choices[0].message.content;
-  try{
-    const d=JSON.parse(raw.replace(/```json|```/g,'').trim());
-    renderGroqResult(d,question);
-    return `${d.veredicto} — ${d.justificativa}`;
-  }catch{return null;}
+  const raw=await groqFetch([{role:'user',content:[
+    {type:'image_url',image_url:{url:`data:image/jpeg;base64,${b64}`}},
+    {type:'text',text:prompt}
+  ]}]);
+  const d=JSON.parse(raw.replace(/```json|```/g,'').trim());
+  renderGroqResult(d,question);
+  return `${d.veredicto} — ${d.justificativa}`;
 }
 
-async function callGroqPassive(b64){
-  const prompt=`Você é o Dr. Cal Lightman. Analise este rosto em modo passivo (sem pergunta específica).
-Forneça análise breve:
-1. ESTADO: Estado emocional geral
-2. SINAIS: Principais sinais faciais observados
-3. VEREDICTO: SINCERO, SUSPEITO ou SUPRIMIDO
-
-JSON sem markdown: {"estado":"...","sinais":"...","veredicto":"SINCERO|SUSPEITO|SUPRIMIDO","justificativa":"..."}`;
-
-  const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':`Bearer ${groqKey}`},
-    body:JSON.stringify({
-      model:'meta-llama/llama-4-scout-17b-16e-instruct',
-      max_tokens:400,
-      messages:[{role:'user',content:[
-        {type:'image_url',image_url:{url:`data:image/jpeg;base64,${b64}`}},
-        {type:'text',text:prompt}
-      ]}]
-    })
-  });
-  if(!res.ok){const e=await res.json();throw new Error(e.error?.message||'Erro Groq');}
-  const data=await res.json();
-  const raw=data.choices[0].message.content;
-  try{
-    const d=JSON.parse(raw.replace(/```json|```/g,'').trim());
-    renderGroqResult(d,null);
-  }catch{}
+async function callGroqPassive(b64) {
+  const raw=await groqFetch([{role:'user',content:[
+    {type:'image_url',image_url:{url:`data:image/jpeg;base64,${b64}`}},
+    {type:'text',text:`Análise passiva do rosto como Dr. Cal Lightman. JSON sem markdown:
+{"estado":"...","sinais":"...","veredicto":"SINCERO|SUSPEITO|SUPRIMIDO","justificativa":"..."}`}
+  ]}],400);
+  const d=JSON.parse(raw.replace(/```json|```/g,'').trim());
+  renderGroqResult(d,null);
 }
 
-function renderGroqResult(d,question){
+function renderGroqResult(d,question) {
   const vc={SINCERO:'sincero',SUSPEITO:'suspeito',SUPRIMIDO:'suprimido'}[d.veredicto?.toUpperCase()]||'neutro';
-  const sections=question?[
-    {t:'⬡ REAÇÃO À PERGUNTA',b:d.reacao},
-    {t:'◎ MÚSCULOS',b:d.musculos},
-    {t:'◉ OLHOS',b:d.olhos},
-    {t:'◈ EMOÇÃO OCULTA',b:d.oculto},
-  ]:[
-    {t:'⬡ ESTADO EMOCIONAL',b:d.estado},
-    {t:'◎ SINAIS FACIAIS',b:d.sinais},
-  ];
+  const secs=question
+    ?[{t:'⬡ REAÇÃO',b:d.reacao},{t:'◎ MÚSCULOS',b:d.musculos},{t:'◉ OLHOS',b:d.olhos},{t:'◈ OCULTO',b:d.oculto}]
+    :[{t:'⬡ ESTADO',b:d.estado},{t:'◎ SINAIS',b:d.sinais}];
   aiBody.innerHTML=`
     ${question?`<div style="font-family:var(--mono);font-size:0.58rem;color:var(--orange);margin-bottom:4px">P: "${question}"</div>`:''}
-    ${sections.filter(s=>s.b).map(s=>`
-      <div style="margin-bottom:5px">
-        <div class="ai-sec-title">${s.t}</div>
-        <div class="ai-sec-body">${s.b}</div>
-      </div>`).join('')}
-    <div class="ai-verdict-box ${vc}">${d.veredicto||'—'} — ${d.justificativa||''}</div>
-    <div style="font-family:var(--mono);font-size:0.48rem;color:var(--muted);margin-top:4px">${nowStr()}</div>
-  `;
+    ${secs.filter(s=>s.b).map(s=>`<div style="margin-bottom:5px"><div class="ai-st">${s.t}</div><div class="ai-sb">${s.b}</div></div>`).join('')}
+    <div class="ai-vbox ${vc}">${d.veredicto||'—'} — ${d.justificativa||''}</div>
+    <div style="font-family:var(--mono);font-size:0.48rem;color:var(--muted);margin-top:4px">${nowStr()}</div>`;
 }
 
-let groqLoopRunning=false;
-function startGroqLoop(){
-  if(groqLoopRunning||!groqKey)return;
-  groqLoopRunning=true;groqCountdown=GROQ_INTERVAL;
-  groqLoop=setInterval(async()=>{
+function startGroqLoop() {
+  if (groqLoopRunning||!groqKey) return;
+  groqLoopRunning=true; groqCountdown=GROQ_INTERVAL;
+  groqLoopTimer=setInterval(async()=>{
     groqCountdown-=500;
-    if(groqCountdown>0){aiTimer.textContent=`próxima análise: ${(groqCountdown/1000).toFixed(1)}s`;return;}
+    if (groqCountdown>0){aiTimer.textContent=`próxima análise: ${(groqCountdown/1000).toFixed(1)}s`;return;}
     groqCountdown=GROQ_INTERVAL;
-    if(!video.videoWidth)return;
-    try{
-      aiScan.classList.add('on');aiTimer.textContent='analisando...';
+    if (!video.videoWidth) return;
+    try {
+      aiScan.classList.add('on'); aiTimer.textContent='analisando...';
       await callGroqPassive(captureFrame());
-    }catch(e){aiBody.innerHTML=`<div style="font-family:var(--mono);font-size:0.6rem;color:var(--red)">Erro: ${e.message}</div>`;}
-    finally{aiScan.classList.remove('on');}
+    } catch(e) {
+      aiBody.innerHTML=`<div style="font-family:var(--mono);font-size:0.6rem;color:var(--red)">Erro: ${e.message}</div>`;
+    } finally { aiScan.classList.remove('on'); }
   },500);
 }
 
-function stopGroqLoop(){
-  clearInterval(groqLoop);groqLoopRunning=false;aiTimer.textContent='—';
-}
+function stopGroqLoop() { clearInterval(groqLoopTimer); groqLoopRunning=false; aiTimer.textContent='—'; }
 
-// ── face-api updates ───────────────────────────────────────
-function updateEmotion(exp){
-  const t=top(exp);const ne=EMOJI[t]||'🙂';
-  if(emoIc.textContent!==ne){
-    emoIc.classList.remove('pop');void emoIc.offsetWidth;
-    emoIc.textContent=ne;emoIc.classList.add('pop');
+function updateEmotion(exp) {
+  const t=topEmo(exp), ne=EMOJI[t]||'🙂';
+  if (emoIc.textContent!==ne){
+    emoIc.classList.remove('pop'); void emoIc.offsetWidth;
+    emoIc.textContent=ne; emoIc.classList.add('pop');
     setTimeout(()=>emoIc.classList.remove('pop'),300);
   }
-  emoLbl.textContent=PT[t]||t;emoLbl.style.color=COLORS[t]||'#fff';
+  emoLbl.textContent=PT[t]||t; emoLbl.style.color=COLORS[t]||'#fff';
   emoCf.textContent=`confiança: ${(exp[t]*100).toFixed(0)}%`;
-
   barsEl.innerHTML=sortExp(exp).map(([n,v],i)=>`
     <div class="bar-row">
-      <span class="bl">${PT[n]||n}</span>
-      <div class="bt"><div class="bf" style="width:${(v*100).toFixed(1)}%;background:${i===0?COLORS[n]:'var(--muted)'};${i===0?`box-shadow:0 0 4px ${COLORS[n]}`:''}"></div></div>
-      <span class="bn">${(v*100).toFixed(0)}%</span>
+      <span class="bar-lbl">${PT[n]||n}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${(v*100).toFixed(1)}%;background:${i===0?COLORS[n]:'var(--muted)'};${i===0?`box-shadow:0 0 4px ${COLORS[n]}`:''}"></div></div>
+      <span class="bar-num">${(v*100).toFixed(0)}%</span>
     </div>`).join('');
 }
 
-function checkMicro(exp){
-  if(!prevExp){prevExp=exp;return;}
-  const t=top(exp),pt=top(prevExp),now2=Date.now();
-  if(t!==pt&&t!=='neutral'){if(!microCand)microCand={emotion:t,start:now2};}
+function checkMicro(exp) {
+  if (!prevExp){prevExp=exp;return;}
+  const t=topEmo(exp),pt=topEmo(prevExp),now=Date.now();
+  if (t!==pt&&t!=='neutral'){if(!microCand)microCand={emotion:t,start:now};}
   else if(microCand){
-    const dur=now2-microCand.start;
+    const dur=now-microCand.start;
     if(dur<MICRO_MAX){logMicro(microCand.emotion,dur);showAlert('micro',`⚡ MICROEXPRESSÃO: ${(PT[microCand.emotion]||microCand.emotion).toUpperCase()}`);}
     microCand=null;
   }
   prevExp=exp;
 }
 
-function logMicro(em,dur){
-  if(microList.children[0]?.style?.color==='var(--muted)') microList.innerHTML='';
+function logMicro(em,dur) {
+  if(microList.children.length&&!microList.children[0].className)microList.innerHTML='';
   const d=document.createElement('div');d.className='micro-item';
-  d.innerHTML=`<span class="mt">${nowStr()}</span><span class="me" style="color:${COLORS[em]}">${EMOJI[em]} ${PT[em]||em}</span><span class="md">microexpressão</span><span class="ms">${dur}ms</span>`;
+  d.innerHTML=`<span class="mit">${nowStr()}</span><span class="mie" style="color:${COLORS[em]}">${EMOJI[em]} ${PT[em]||em}</span><span class="mid">microexpressão</span><span class="mis">${dur}ms</span>`;
   microList.prepend(d);if(microList.children.length>4)microList.lastChild.remove();
 }
 
-function pushTL(exp){
+function pushTimeline(exp) {
   tlData.push({t:Date.now(),exp:{...exp}});
   if(tlData.length>TL_MAX)tlData.shift();
-  drawTL();
+  drawTimeline();
 }
 
-function drawTL(){
+function drawTimeline() {
   const W=tlCanvas.width,H=tlCanvas.height;
-  tlCtx.clearRect(0,0,W,H);
-  tlCtx.fillStyle='#090910';tlCtx.fillRect(0,0,W,H);
-  tlCtx.strokeStyle='#181828';tlCtx.lineWidth=1;
+  tlCtx.clearRect(0,0,W,H);tlCtx.fillStyle='#0b0b12';tlCtx.fillRect(0,0,W,H);
+  tlCtx.strokeStyle='#1a1a2e';tlCtx.lineWidth=1;
   for(let i=0;i<5;i++){const y=(H/5)*i;tlCtx.beginPath();tlCtx.moveTo(0,y);tlCtx.lineTo(W,y);tlCtx.stroke();}
   if(tlData.length<2)return;
-  const step=W/(TL_MAX-1);
-  const curTop=top(tlData[tlData.length-1].exp);
+  const step=W/(TL_MAX-1),cur=topEmo(tlData[tlData.length-1].exp);
   Object.keys(COLORS).forEach(em=>{
-    tlCtx.beginPath();
-    tlCtx.strokeStyle=COLORS[em];
-    tlCtx.lineWidth=em===curTop?2:1;
-    tlCtx.globalAlpha=em===curTop?1:0.25;
-    tlData.forEach((pt,i)=>{
-      const x=i*step,y=H-(pt.exp[em]||0)*H*0.9-2;
-      i===0?tlCtx.moveTo(x,y):tlCtx.lineTo(x,y);
-    });
+    tlCtx.beginPath();tlCtx.strokeStyle=COLORS[em];tlCtx.lineWidth=em===cur?2:1;tlCtx.globalAlpha=em===cur?1:0.28;
+    tlData.forEach((pt,i)=>{const x=i*step,y=H-(pt.exp[em]||0)*H*0.9-2;i===0?tlCtx.moveTo(x,y):tlCtx.lineTo(x,y);});
     tlCtx.stroke();tlCtx.globalAlpha=1;
   });
-  tlLeg.innerHTML=Object.keys(COLORS).map(em=>`
-    <div class="tl-li"><div class="tl-dot" style="background:${COLORS[em]}"></div>${PT[em]||em}</div>`).join('');
+  tlLegend.innerHTML=Object.keys(COLORS).map(em=>`<div class="tl-leg-item"><div class="tl-leg-dot" style="background:${COLORS[em]}"></div>${PT[em]||em}</div>`).join('');
 }
 
-function drawOverlay(det){
+function drawOverlay(det) {
   const vW=video.videoWidth,vH=video.videoHeight;
-  ovEl.width=vW;ovEl.height=vH;
-  const ctx=ovEl.getContext('2d');ctx.clearRect(0,0,vW,vH);
+  overlayEl.width=vW;overlayEl.height=vH;
+  const ctx=overlayEl.getContext('2d');ctx.clearRect(0,0,vW,vH);
   if(!det)return;
-  const box=det.detection.box,t=top(det.expressions);
-  ctx.strokeStyle=COLORS[t]||'#fff';ctx.lineWidth=2;
-  ctx.shadowColor=COLORS[t];ctx.shadowBlur=14;
+  const box=det.detection.box,t=topEmo(det.expressions);
+  ctx.strokeStyle=COLORS[t]||'#fff';ctx.lineWidth=2;ctx.shadowColor=COLORS[t];ctx.shadowBlur=14;
   ctx.strokeRect(box.x,box.y,box.width,box.height);ctx.shadowBlur=0;
-  const cS=14;
-  [[box.x,box.y,cS,cS],[box.x+box.width,box.y,-cS,cS],[box.x,box.y+box.height,cS,-cS],[box.x+box.width,box.y+box.height,-cS,-cS]].forEach(([x,y,dx,dy])=>{
-    ctx.strokeStyle='rgba(255,255,255,0.7)';ctx.lineWidth=1.5;
-    ctx.beginPath();ctx.moveTo(x+dx,y);ctx.lineTo(x,y);ctx.lineTo(x,y+dy);ctx.stroke();
+  const cS=16;
+  [[box.x,box.y,cS,0],[box.x+box.width,box.y,-cS,0],[box.x,box.y+box.height,cS,0],[box.x+box.width,box.y+box.height,-cS,0]].forEach(([x,y,dx])=>{
+    ctx.strokeStyle='rgba(255,255,255,0.8)';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(x+dx,y);ctx.lineTo(x,y);ctx.lineTo(x,y+(dx>0?cS:-cS));ctx.stroke();
   });
-  ctx.fillStyle=COLORS[t];ctx.font='bold 11px Rajdhani';
-  ctx.fillText(`${PT[t]||t} ${(det.expressions[t]*100).toFixed(0)}%`,box.x+3,box.y-5);
-
-  // deviation indicator
-  if(baselineData){
+  ctx.fillStyle=COLORS[t];ctx.font='bold 12px Rajdhani';
+  ctx.fillText(`${PT[t]||t} ${(det.expressions[t]*100).toFixed(0)}%`,box.x+4,box.y-6);
+  if(baselineData&&phase==='interrogation'){
     const dev=calcDeviation(det.expressions);
-    if(dev>30){
-      ctx.fillStyle=dev>60?'rgba(255,32,32,0.7)':'rgba(255,122,0,0.7)';
-      ctx.font='bold 10px Share Tech Mono';
-      ctx.fillText(`DEV:${dev}%`,box.x+3,box.y+box.height+12);
-    }
+    if(dev>30){ctx.fillStyle=dev>60?'rgba(255,43,43,0.85)':'rgba(255,122,0,0.85)';ctx.font='bold 10px Share Tech Mono';ctx.fillText(`DEV:${dev}%`,box.x+3,box.y+box.height+12);}
   }
 }
 
-// ── Detection loop ─────────────────────────────────────────
-async function detect(){
-  if(!frameSkip){
+// Detection loop — IDÊNTICO à versão que funcionou
+async function detect() {
+  if (!frameSkip) {
     frameSkip=true;
-    try{
+    try {
       const det=await faceapi
         .detectSingleFace(video,new faceapi.TinyFaceDetectorOptions({inputSize:224,scoreThreshold:0.4}))
         .withFaceExpressions();
       if(det){
-        sysEl.textContent='ROSTO DETECTADO';
-        const exp=det.expressions;
-        prevExp=exp;
-        updateEmotion(exp);
-        checkMicro(exp);
-        pushTL(exp);
-        drawOverlay(det);
-        if(phase==='baseline') baselineFrames.push({...exp});
+        sysStatus.textContent='ROSTO DETECTADO';
+        const exp=det.expressions; prevExp=exp;
+        updateEmotion(exp);checkMicro(exp);pushTimeline(exp);drawOverlay(det);
+        if(phase==='baseline')      baselineFrames.push({...exp});
         if(phase==='interrogation') updateDeviation(exp);
-      }else{
-        sysEl.textContent='NENHUM ROSTO';drawOverlay(null);
-      }
-    }catch(e){}
+      } else { sysStatus.textContent='NENHUM ROSTO'; drawOverlay(null); }
+    } catch(e){}
     setTimeout(()=>{frameSkip=false;},INTERVAL_MS);
   }
   requestAnimationFrame(detect);
 }
 
-// ── PDF Report ─────────────────────────────────────────────
-btnReport.addEventListener('click',generateReport);
-function generateReport(){
-  if(sessionLog.length===0){alert('Nenhuma pergunta registrada na sessão.');return;}
-  const rows=sessionLog.map((e,i)=>`
-    <tr style="border-bottom:1px solid #222">
-      <td style="padding:6px;color:#888;font-size:11px">${e.time}</td>
-      <td style="padding:6px;font-size:12px">${e.question}</td>
-      <td style="padding:6px;text-align:center">${e.emoji} ${e.emotion}</td>
-      <td style="padding:6px;text-align:center;color:${e.deviation>60?'#ff2020':e.deviation>30?'#ff7a00':'#00ff88'}">${e.deviation}%</td>
-      <td style="padding:6px;font-size:11px;color:#aaa">${e.groqVerdict||'—'}</td>
-    </tr>`).join('');
-
-  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
-  <title>Relatório — Lie to Me</title>
-  <style>
-    body{font-family:'Courier New',monospace;background:#050508;color:#dde8f0;padding:2rem;max-width:800px;margin:0 auto;}
-    h1{color:#ff2020;font-size:1.8rem;letter-spacing:0.2em;margin-bottom:0.3rem;}
-    .sub{color:#3a4a5a;font-size:0.7rem;letter-spacing:0.2em;margin-bottom:2rem;}
-    table{width:100%;border-collapse:collapse;font-family:'Courier New',monospace;}
-    th{background:#0d0d16;color:#3a4a5a;font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;padding:8px;text-align:left;border-bottom:2px solid #181828;}
-    .footer{margin-top:2rem;font-size:0.65rem;color:#3a4a5a;border-top:1px solid #181828;padding-top:1rem;}
-    .badge{display:inline-block;padding:3px 8px;border-radius:3px;font-size:0.65rem;font-weight:700;}
-    .sincero{background:rgba(0,255,136,0.1);color:#00ff88;}
-    .suspeito{background:rgba(255,122,0,0.1);color:#ff7a00;}
-    .suprimido{background:rgba(255,32,32,0.1);color:#ff2020;}
-  </style></head><body>
-  <h1>LIE TO ME</h1>
-  <div class="sub">RELATÓRIO DE SESSÃO · ${new Date().toLocaleString('pt-br')} · ${sessionLog.length} PERGUNTA(S)</div>
-  <table>
-    <tr>
-      <th>Horário</th><th>Pergunta</th><th>Emoção</th><th>Desvio</th><th>Veredicto IA</th>
-    </tr>
-    ${rows}
-  </table>
-  <div class="footer">
-    Gerado por Lie to Me · Análise baseada em face-api.js + Groq llama-4-scout<br>
-    ⚠ Este relatório é experimental e não tem validade científica ou legal.
-  </div>
-  </body></html>`;
-
-  const win=window.open('','_blank');
-  win.document.write(html);
-  win.document.close();
-  setTimeout(()=>win.print(),800);
-}
-
-// ── Init ───────────────────────────────────────────────────
-async function startCamera(){
-  try{
-    const stream=await navigator.mediaDevices.getUserMedia({
-      video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}
-    });
-    video.srcObject=stream;
-    video.play();
-    await new Promise(r=>video.addEventListener('loadedmetadata',r,{once:true}));
-    return true;
-  }catch(err){
-    // Try without constraints
-    try{
-      const stream=await navigator.mediaDevices.getUserMedia({video:true});
-      video.srcObject=stream;
-      video.play();
-      await new Promise(r=>video.addEventListener('loadedmetadata',r,{once:true}));
-      return true;
-    }catch(err2){
-      sysEl.textContent='ERRO CÂMERA: '+err2.message;
-      return false;
-    }
-  }
-}
-
-async function init(){
-  try{
-    sysEl.textContent='CARREGANDO BIBLIOTECA...';
+// Init — IDÊNTICO à versão que funcionou
+async function init() {
+  try {
+    sysStatus.textContent='CARREGANDO BIBLIOTECA...';
     await loadScript('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js');
-    sysEl.textContent='TOQUE EM "ATIVAR CÂMERA"';
+
+    sysStatus.textContent='INICIANDO CÂMERA...';
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'}});
+    video.srcObject=stream;
+    await new Promise(r=>video.addEventListener('loadedmetadata',r,{once:true}));
+
     tlCanvas.width=(tlCanvas.offsetWidth||600)*Math.min(window.devicePixelRatio,2);
-    tlCanvas.height=60*Math.min(window.devicePixelRatio,2);
-  }catch(err){
-    sysEl.textContent='ERRO: '+err.message;
+    tlCanvas.height=65*Math.min(window.devicePixelRatio,2);
+
+    sysStatus.textContent='CARREGANDO MODELOS IA...';
+    await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+    await faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL);
+
+    sysStatus.textContent='SISTEMA ATIVO';
+    setPhase('idle','CLIQUE EM "CALIBRAR BASELINE" PARA COMEÇAR');
+    requestAnimationFrame(detect);
+  } catch(err) {
+    sysStatus.textContent='ERRO: '+err.message;
     console.error(err);
   }
 }
 
-btnBaseline.addEventListener('click',startBaseline);
-
-// Camera button for mobile
-document.getElementById('btn-cam').addEventListener('click',async()=>{
-  const overlay=document.getElementById('cam-start-overlay');
-  overlay.innerHTML='<div style="font-family:var(--mono);font-size:0.65rem;color:var(--blue)">Solicitando permissão...</div>';
-  const ok=await startCamera();
-  if(ok){
-    overlay.style.display='none';
-    // Load models if not loaded yet
-    if(typeof faceapi==='undefined'||!faceapi.nets.tinyFaceDetector.isLoaded){
-      overlay.style.display='flex';
-      overlay.innerHTML='<div style="font-family:var(--mono);font-size:0.65rem;color:var(--blue)">Carregando modelos IA...</div>';
-      await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
-      await faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL);
-      overlay.style.display='none';
-    }
-    sysEl.textContent='SISTEMA ATIVO';
-    setPhaseBanner('idle','CLIQUE EM "CALIBRAR BASELINE" PARA COMEÇAR');
-    requestAnimationFrame(detect);
-  }else{
-    overlay.innerHTML='<div style="font-family:var(--mono);font-size:0.65rem;color:var(--red)">'+sysEl.textContent+'</div>';
-  }
+// PDF Report
+btnReport.addEventListener('click',()=>{
+  if(!sessionLog.length){alert('Nenhuma pergunta registrada.');return;}
+  const rows=sessionLog.map(e=>`<tr><td>${e.time}</td><td>${e.question}</td><td>${e.emoji} ${e.emotion}</td><td style="color:${e.deviation>60?'#ff2b2b':e.deviation>30?'#ff7a00':'#00ff88'}">${e.deviation}%</td><td>${e.groqVerdict||'—'}</td></tr>`).join('');
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatório Lie to Me</title>
+  <style>body{font-family:'Courier New',monospace;background:#050508;color:#dde8f0;padding:2rem;max-width:800px;margin:0 auto;}
+  h1{color:#ff2b2b;font-size:1.8rem;letter-spacing:0.2em;}.sub{color:#445566;font-size:0.7rem;margin-bottom:2rem;}
+  table{width:100%;border-collapse:collapse;}th{background:#0e0e18;color:#445566;font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;padding:8px;text-align:left;border-bottom:2px solid #1a1a2e;}
+  td{padding:7px;font-size:0.75rem;border-bottom:1px solid #1a1a2e;}
+  .ft{margin-top:2rem;font-size:0.6rem;color:#445566;border-top:1px solid #1a1a2e;padding-top:1rem;}</style></head>
+  <body><h1>LIE TO ME</h1><div class="sub">RELATÓRIO · ${new Date().toLocaleString('pt-br')} · ${sessionLog.length} PERGUNTA(S)</div>
+  <table><tr><th>Horário</th><th>Pergunta</th><th>Emoção</th><th>Desvio</th><th>Veredicto IA</th></tr>${rows}</table>
+  <div class="ft">face-api.js + Groq llama-4-scout · ⚠ Experimental — sem validade científica ou legal.</div></body></html>`;
+  const win=window.open('','_blank');win.document.write(html);win.document.close();setTimeout(()=>win.print(),800);
 });
 
 init();

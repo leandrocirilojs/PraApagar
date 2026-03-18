@@ -1,86 +1,68 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marmita & Cia</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>Detector de Emoção</title>
 </head>
 <body>
-    <header class="ifood-header">
-        <div class="header-content">
-            <h1 class="ifood-logo-text">Marmitaria Seringueira</h1>
 
-        </div>
-    </header>
+<h2>Detector de Emoção 😄</h2>
+<video id="video" width="320" height="240" autoplay muted></video>
+<p id="status">Carregando IA...</p>
 
-    <button id="floating-cart-btn" class="ifood-fab-cart ifood-button primary">Ver Carrinho (<span id="cart-count">0</span>)</button>
+<script src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
 
-    <main class="ifood-main">
-        <section id="menu" class="ifood-section">
-            <h2 class="section-title">Nosso Cardápio</h2>
-            <div id="menu-items" class="ifood-grid-container">
-                <!-- Itens do cardápio serão carregados aqui pelo JavaScript -->
-            </div>
-        </section>
+<script>
+const video = document.getElementById('video');
+const status = document.getElementById('status');
 
-        <section id="cart" class="ifood-section hidden">
-            <h2 class="section-title">Seu Carrinho</h2>
-            <div id="cart-items" class="ifood-cart-items">
-                <!-- Itens do carrinho serão carregados aqui pelo JavaScript -->
-            </div>
-            <div id="order-details" class="ifood-order-details">
-                <h3>Detalhes do Pedido</h3>
+// iniciar câmera
+async function iniciarCamera() {
+  const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+  video.srcObject = stream;
+}
 
-                <div class="form-group">
-                    <h4>Tipo de Pedido</h4>
-                    <label><input type="radio" name="order-type" value="delivery" checked> Delivery</label>
-                    <label><input type="radio" name="order-type" value="retirada"> Retirada</label>
-                </div>
+// carregar modelos
+async function carregarModelos() {
+  status.innerText = "Carregando modelos...";
 
-                <div class="form-group">
-                    <h4>Forma de Pagamento</h4>
-                    <label><input type="radio" name="payment-method" value="dinheiro" checked> Dinheiro</label>
-                    <label><input type="radio" name="payment-method" value="pix"> PIX (chave exibida após o envio)</label>
-                    <label><input type="radio" name="payment-method" value="cartao_debito"> Cartão de Débito - Maquininha</label>
-                    <label><input type="radio" name="payment-method" value="cartao_credito"> Cartão de Crédito - Maquininha</label>
-                </div>
+  await faceapi.nets.tinyFaceDetector.loadFromUri('./models');
+  await faceapi.nets.faceExpressionNet.loadFromUri('./models');
 
-                <div id="delivery-address-fields" class="form-group">
-                    <h4>Endereço de Entrega</h4>
-                    <label for="rua">Rua:</label>
-                    <input type="text" id="rua" name="rua" placeholder="Ex: Av. Brasil">
+  status.innerText = "Modelos carregados!";
+}
 
-                    <label for="numero">Número:</label>
-                    <input type="text" id="numero" name="numero" placeholder="Ex: 123">
+// detectar emoção
+function detectarEmocao() {
+  setInterval(async () => {
+    const detections = await faceapi
+      .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+      .withFaceExpressions();
 
-                    <label for="bairro">Bairro:</label>
-                    <input type="text" id="bairro" name="bairro" placeholder="Ex: Centro">
+    if (detections) {
+      const exp = detections.expressions;
 
-                    <label for="referencia">Referência:</label>
-                    <input type="text" id="referencia" name="referencia" placeholder="Ex: Próximo à padaria">
+      const emocao = Object.keys(exp).reduce((a, b) => 
+        exp[a] > exp[b] ? a : b
+      );
 
-                    <label for="complemento">APTO/Referência/Complemento:</label>
-                    <input type="text" id="complemento" name="complemento" placeholder="Ex: Sobrado Cinza">
+      status.innerText = "Emoção: " + emocao;
+    } else {
+      status.innerText = "Nenhum rosto detectado";
+    }
 
-                    <p class="delivery-fee">Jardim Praia: Taxa de entrega: R$6,00</p>
-                </div>
-            </div>
-            <div id="cart-summary" class="ifood-cart-summary">
-                <p>Total: R$ <span id="cart-total">0.00</span></p>
-                <button id="checkout-btn" class="ifood-button primary">Finalizar Pedido via WhatsApp</button>
-                <button id="continue-shopping-btn" class="ifood-button secondary">Continuar Comprando</button>
-            </div>
-        </section>
-    </main>
+  }, 500);
+}
 
-    <footer class="ifood-footer">
-        <p>&copy; 2023 Marmita & Cia. Todos os direitos reservados.</p>
-    </footer>
+// iniciar tudo
+async function iniciar() {
+  await iniciarCamera();
+  await carregarModelos();
+  detectarEmocao();
+}
 
-    <script src="script.js"></script>
+iniciar();
+</script>
+
 </body>
 </html>

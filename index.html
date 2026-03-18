@@ -1266,16 +1266,13 @@ async function initFaceMesh(){
       }
     });
 
-    // Run FaceMesh on video frames
-    const fmLoop=async()=>{
-      if(!fmFrameSkip&&video.readyState>=2){
-        fmFrameSkip=true;
-        try{ await fmModel.send({image:video}); }catch(e){}
-        setTimeout(()=>{fmFrameSkip=false;},200); // 5fps for FaceMesh to not overload
-      }
-      requestAnimationFrame(fmLoop);
-    };
-    requestAnimationFrame(fmLoop);
+    // Run FaceMesh on video frames — setInterval keeps running even when scrolled
+    setInterval(async()=>{
+      if(fmFrameSkip||!video.videoWidth||video.readyState<2)return;
+      fmFrameSkip=true;
+      try{ await fmModel.send({image:video}); }catch(e){}
+      fmFrameSkip=false;
+    }, 200); // 5fps for FaceMesh
     document.getElementById('fm-status').textContent='INICIALIZADO';
   }catch(e){
     document.getElementById('fm-status').textContent='ERRO: '+e.message;
@@ -1461,22 +1458,23 @@ function drawOverlay(det){
   }
 }
 
-// Detection loop
-async function detect(){
-  if(!frameSkip){
-    frameSkip=true;
-    try{
-      const det=await faceapi.detectSingleFace(video,new faceapi.TinyFaceDetectorOptions({inputSize:224,scoreThreshold:0.4})).withFaceExpressions();
-      if(det){
-        sysStatus.textContent='ROSTO DETECTADO';const exp=det.expressions;prevExp=exp;
-        updateEmotion(exp);checkMicro(exp);pushTimeline(exp);drawOverlay(det);
-        if(phase==='baseline')baselineFrames.push({...exp});
-        if(phase==='interrogation')updateDeviation(exp);
-      }else{sysStatus.textContent='NENHUM ROSTO';drawOverlay(null);}
-    }catch(e){}
-    setTimeout(()=>{frameSkip=false;},INTERVAL_MS);
-  }
-  requestAnimationFrame(detect);
+// Detection loop — uses setInterval so it keeps running even when camera is scrolled off screen
+async function runDetection(){
+  if(frameSkip||!video.videoWidth)return;
+  frameSkip=true;
+  try{
+    const det=await faceapi.detectSingleFace(video,new faceapi.TinyFaceDetectorOptions({inputSize:224,scoreThreshold:0.4})).withFaceExpressions();
+    if(det){
+      sysStatus.textContent='ROSTO DETECTADO';const exp=det.expressions;prevExp=exp;
+      updateEmotion(exp);checkMicro(exp);pushTimeline(exp);drawOverlay(det);
+      if(phase==='baseline')baselineFrames.push({...exp});
+      if(phase==='interrogation')updateDeviation(exp);
+    }else{sysStatus.textContent='NENHUM ROSTO';drawOverlay(null);}
+  }catch(e){}
+  frameSkip=false;
+}
+function detect(){
+  setInterval(runDetection, INTERVAL_MS);
 }
 
 // Camera switch
@@ -1517,7 +1515,7 @@ async function init(){
     await faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL);
     sysStatus.textContent='SISTEMA ATIVO';
     setPhase('idle','CLIQUE EM "CALIBRAR BASELINE" PARA COMEÇAR');
-    requestAnimationFrame(detect);
+    detect(); // starts setInterval loop
     // Start FaceMesh in parallel (non-blocking)
     initFaceMesh().catch(e=>console.warn('FaceMesh:',e));
   }catch(err){sysStatus.textContent='ERRO: '+err.message;console.error(err);}

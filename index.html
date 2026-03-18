@@ -241,6 +241,7 @@
   <button class="btn ghost"  id="btn-stop"  disabled>■ PARAR</button>
   <button class="btn purple" id="btn-voice" disabled>🎙 ATIVAR VOZ</button>
   <button class="btn ghost"  id="btn-cam-switch">🔄 CÂMERA</button>
+  <button class="btn purple" id="btn-capture" disabled>📸 CAPTURAR</button>
   <button class="btn orange" id="btn-report" disabled>📋 RELATÓRIO</button>
 </div>
 
@@ -421,7 +422,8 @@ function loadScript(src){
 }
 
 const MODEL_URL='https://justadudewhohacks.github.io/face-api.js/models';
-const INTERVAL_MS=150,MICRO_MAX=600,TL_MAX=200,BASELINE_SECS=10,GROQ_INTERVAL=4000;
+const INTERVAL_MS=150,MICRO_MAX=800,TL_MAX=200,BASELINE_SECS=10,GROQ_INTERVAL=4000;
+const MICRO_THRESHOLD=0.15; // secondary emotion threshold for micro detection
 const FILLERS=['ééé','éh','aaa','hmm','hm','ahn','ah','eee','né','tipo','assim','então'];
 
 const EMOJI={happy:'😄',sad:'😢',angry:'😠',fearful:'😨',disgusted:'🤢',surprised:'😲',neutral:'😐'};
@@ -792,7 +794,7 @@ btnStart.addEventListener('click',()=>{
   phase='interrogation';qLog.innerHTML='';
   setPhase('active','🔴 INTERROGATÓRIO ATIVO',100,'AO VIVO');
   btnStart.disabled=true;btnStop.disabled=false;btnAsk.disabled=false;
-  btnReport.disabled=false;btnVoice.disabled=false;
+  btnReport.disabled=false;btnVoice.disabled=false;btnCapture.disabled=false;
   if(groqKey)startGroqLoop();
   showAlert('micro','INTERROGATÓRIO INICIADO','🔴',2000);
 });
@@ -801,7 +803,7 @@ btnStop.addEventListener('click',()=>{
   phase='ready';stopGroqLoop();
   if(voiceActive)stopVoiceAnalysis();
   setPhase('ready','■ INTERROGATÓRIO ENCERRADO',100,'ENCERRADO');
-  btnStart.disabled=false;btnStop.disabled=true;btnAsk.disabled=true;btnVoice.disabled=true;
+  btnStart.disabled=false;btnStop.disabled=true;btnAsk.disabled=true;btnVoice.disabled=true;btnCapture.disabled=true;
 });
 
 btnClr.addEventListener('click',()=>{qInput.value='';});
@@ -918,12 +920,32 @@ function updateEmotion(exp){
 function checkMicro(exp){
   if(!prevExp){prevExp=exp;return;}
   const t=topEmo(exp),pt=topEmo(prevExp),now=Date.now();
-  if(t!==pt&&t!=='neutral'){if(!microCand)microCand={emotion:t,start:now};}
-  else if(microCand){
+
+  // Primary: dominant emotion changed
+  if(t!==pt&&t!=='neutral'){
+    if(!microCand)microCand={emotion:t,start:now};
+  } else if(microCand){
     const dur=now-microCand.start;
-    if(dur<MICRO_MAX){logMicro(microCand.emotion,dur);showAlert('micro',`⚡ MICROEXPRESSÃO: ${(PT[microCand.emotion]||microCand.emotion).toUpperCase()}`);}
+    if(dur<MICRO_MAX){
+      logMicro(microCand.emotion,dur);
+      showAlert('micro',`⚡ MICROEXPRESSÃO: ${(PT[microCand.emotion]||microCand.emotion).toUpperCase()}`);
+    }
     microCand=null;
   }
+
+  // Secondary: any non-neutral emotion spike above threshold that wasn't there before
+  if(!microCand){
+    Object.keys(exp).forEach(em=>{
+      if(em==='neutral')return;
+      const prev=(prevExp[em]||0), cur=(exp[em]||0);
+      // spike: jumped from low to high quickly
+      if(cur>MICRO_THRESHOLD&&prev<0.05&&cur-prev>0.12){
+        logMicro(em, 250); // estimated ~250ms flash
+        showAlert('micro',`⚡ MICROEXPRESSÃO: ${(PT[em]||em).toUpperCase()}`);
+      }
+    });
+  }
+
   prevExp=exp;
 }
 
@@ -1078,6 +1100,17 @@ btnCamSwitch.addEventListener('click',async()=>{
     const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode}});
     video.srcObject=stream;sysStatus.textContent=facingMode==='user'?'CÂMERA FRONTAL':'CÂMERA TRASEIRA';
   }catch(e){sysStatus.textContent='ERRO: '+e.message;facingMode=facingMode==='user'?'environment':'user';}
+});
+
+// Manual capture button
+const btnCapture=document.getElementById('btn-capture');
+btnCapture.addEventListener('click',()=>{
+  const em=prevExp?topEmo(prevExp):'neutral';
+  const dataUrl=captureScreenshot(em,0);
+  if(dataUrl){
+    addToGallery(em,0,dataUrl);
+    showAlert('micro','📸 CAPTURA MANUAL SALVA','📸',1800);
+  }
 });
 
 // Init — igual à versão que funcionou

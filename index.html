@@ -472,7 +472,7 @@
   <input type="password" id="api-key-input" placeholder="gsk_..." autocomplete="off" />
   <button class="btn" id="btn-save-key">SALVAR</button>
   <div class="api-note">
-    Gratuito em console.groq.com · Modelo: llama-3.2-11b-vision-preview · Análise a cada 4s
+    Gratuito em console.groq.com · Modelo: llama-4-scout-17b · Análise a cada 4s
   </div>
 </div>
 
@@ -495,7 +495,7 @@
     <div class="ai-panel">
       <div class="ai-header">
         <div class="ai-title">Análise Profunda IA</div>
-        <div class="ai-model">llama-3.2-vision · groq</div>
+        <div class="ai-model">llama-4-scout · groq</div>
       </div>
       <div class="ai-body" id="ai-body">
         <div class="ai-placeholder" id="ai-placeholder">
@@ -701,7 +701,7 @@ Responda em JSON com este formato exato (sem markdown, sem backticks):
       'Authorization': `Bearer ${groqKey}`
     },
     body: JSON.stringify({
-      model: 'llama-3.2-11b-vision-preview',
+      model: 'meta-llama/llama-4-scout-17b-16e-instruct',
       max_tokens: 600,
       messages: [{
         role: 'user',

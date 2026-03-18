@@ -26,8 +26,8 @@ async function iniciarCamera() {
 async function carregarModelos() {
   status.innerText = "Carregando modelos...";
 
-  await faceapi.nets.tinyFaceDetector.loadFromUri('./models');
-  await faceapi.nets.faceExpressionNet.loadFromUri('./models');
+  await faceapi.nets.tinyFaceDetector.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
+await faceapi.nets.faceExpressionNet.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
 
   status.innerText = "Modelos carregados!";
 }
